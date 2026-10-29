@@ -6,6 +6,17 @@
 
 Working on it 
 
+## Lancer le projet
+
+Node.js + TypeScript, avec [Vite](https://vite.dev).
+
+```bash
+npm install
+npm run dev       # serveur local sur http://localhost:5173
+npm run build     # vérifie les types et génère dist/
+npm run preview   # sert le build de production
+```
+
 ## Polices
 
 | Rôle | Police | Fichier |
@@ -36,8 +47,4 @@ Working on it
   font-style: normal;
 }
 ```
-
-<p style="font-family: 'Old Standard TT'; font-weight: 700; font-size: 40px;">Café du Conservatoire</p>
-<p style="font-family: 'SUSE Mono'; font-weight: 500; font-style: italic; font-size: 22px;">Suggestions police + couleurs</p>
-<p style="font-family: 'Intel One Mono'; font-weight: 500; font-size: 18px;">Le café ouvre à 8h, du mardi au samedi.</p>
 

@@ -1,0 +1,30 @@
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: var(--bordeaux-profond);
+  color: var(--creme);
+}
+
+.site-footer p {
+  margin: 0 0 0.25rem;
+}
+
+.site-footer__name {
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.site-footer__tagline {
+  font-family: var(--font-subtitle);
+  font-style: italic;
+}
+
+.site-footer__copy {
+  flex-basis: 100%;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
