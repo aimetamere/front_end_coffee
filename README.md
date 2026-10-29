@@ -35,6 +35,7 @@ Working on it
   font-weight: 500;
   font-style: normal;
 }
+```
 
 <p style="font-family: 'Old Standard TT'; font-weight: 700; font-size: 40px;">Café du Conservatoire</p>
 <p style="font-family: 'SUSE Mono'; font-weight: 500; font-style: italic; font-size: 22px;">Suggestions police + couleurs</p>
