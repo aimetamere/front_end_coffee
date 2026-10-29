@@ -2,6 +2,7 @@ import './style.css';
 import { createHeader } from './components/header';
 import { createFooter } from './components/footer';
 import { createCarousel, type Slide } from './style/carousel';
+import './mobile-style.css';
 
 const heroSlides: Slide[] = [
   { src: '/photo/web/dsf2397.jpg', alt: 'La salle du café, avec des clients attablés' },
