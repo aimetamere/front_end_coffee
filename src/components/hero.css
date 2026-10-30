@@ -12,7 +12,7 @@
   height: 100vh;
   height: 100svh;
   overflow: hidden;
-  background: var(--black);
+  background: var(--bg-color);
 }
 
 .hero-stack__base {

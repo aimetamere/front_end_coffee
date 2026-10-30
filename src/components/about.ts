@@ -1,4 +1,5 @@
 import './about.css';
+import { capAccent } from '../style/cap-accent';
 
 export function createAbout(): HTMLElement {
   const section = document.createElement('section');
@@ -7,7 +8,7 @@ export function createAbout(): HTMLElement {
   section.setAttribute('aria-labelledby', 'about-title');
   section.innerHTML = `
     <div class="about__inner">
-      <h2 id="about-title" class="about__title">À propos de nous</h2>
+      <h2 id="about-title" class="about__title">${capAccent('À propos de nous')}</h2>
       <p class="about__subtitle">Un café au cœur du Conservatoire de Musique de Genève</p>
       <p class="about__text">
         Découvrez un café où la convivialité se mêle à la gastronomie, au cœur du

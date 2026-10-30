@@ -118,7 +118,7 @@ export function createHero(): HTMLElement {
   };
 
   const measure = () => {
-    section.style.height = `${window.innerHeight * (1 + steps * SCROLL_PER_CARD)}px`;
+    section.style.height = `calc(100svh * ${1 + steps * SCROLL_PER_CARD})`;
     render(current);
     update();
   };

@@ -1,0 +1,10 @@
+.cap-grave {
+  position: relative;
+}
+
+.cap-grave::before {
+  content: "`";
+  position: absolute;
+  left: 0.147em;
+  transform: translateY(-0.26em);
+}

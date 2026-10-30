@@ -1,4 +1,5 @@
 import './header.css';
+import { capAccent } from '../style/cap-accent';
 
 const links = [
   { label: 'Accueil', href: '#' },
@@ -44,7 +45,7 @@ export function createHeader(): HTMLElement {
             ${links
               .map(
                 (link, i) =>
-                  `<li style="--i: ${i}"><a href="${link.href}">${link.label}</a></li>`,
+                  `<li style="--i: ${i}"><a href="${link.href}">${capAccent(link.label)}</a></li>`,
               )
               .join('')}
           </ul>
