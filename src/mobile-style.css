@@ -2,11 +2,16 @@
   /* Header */
   .site-header {
     --header-height: 4.5rem;
-    --sphere-size: 9rem;
+    --sphere-size: 4rem;
     --bubble-size: 3.25rem;
 
     padding-right: calc(var(--bubble-size) + 2rem);
     padding-left: calc(var(--sphere-size) / 2 + 1rem);
+  }
+
+  .site-header__sphere {
+    top: 0.5rem;
+    height: calc(var(--sphere-size) * 1.6);
   }
 
   .site-header__logo {
@@ -19,7 +24,7 @@
 
   /* Bubble menu */
   .bubble-menu__content {
-    padding: 6rem 1.5rem calc(2.5rem + env(safe-area-inset-bottom));
+    padding: 6rem 1.5rem calc(2.5rem + (100lvh - 100svh) + env(safe-area-inset-bottom));
   }
 
   .bubble-menu__links a {
@@ -71,9 +76,13 @@
   }
 
   /* Footer */
-  .site-footer {
+  .site-footer__main {
     flex-direction: column;
     gap: 1rem;
-    padding: 1.5rem 1.25rem;
+    padding: 1.5rem 1.25rem 0.75rem;
+  }
+
+  .site-footer__wave {
+    height: 2rem;
   }
 }

@@ -1,15 +1,19 @@
 .site-footer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: 2rem;
-  background: var(--bordeaux-profond);
-  color: var(--creme);
+  background: var(--bg-color);
 }
 
 .site-footer p {
   margin: 0 0 0.25rem;
+}
+
+.site-footer__main {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 2rem 2rem 1rem;
+  background: var(--bordeaux-profond);
+  color: var(--creme);
 }
 
 .site-footer__name {
@@ -23,6 +27,28 @@
   font-style: italic;
 }
 
+.site-footer__copy {
+  flex-basis: 100%;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.site-footer__wave {
+  display: block;
+  width: 100%;
+  height: 3rem;
+  margin-top: -1px;
+  fill: var(--bordeaux-profond);
+}
+
+.site-footer__social {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 2rem calc(1.75rem + env(safe-area-inset-bottom));
+  color: var(--bordeaux-profond);
+}
+
 .site-footer__label {
   margin-bottom: 0.75rem;
   font-family: var(--font-subtitle);
@@ -30,14 +56,8 @@
 }
 
 .site-footer .social-links {
-  --social-bg: var(--creme);
-  --social-color: var(--bordeaux-profond);
+  --social-bg: var(--bordeaux-profond);
+  --social-color: var(--creme);
 
   gap: 0.5rem;
-}
-
-.site-footer__copy {
-  flex-basis: 100%;
-  font-size: 0.85rem;
-  opacity: 0.8;
 }

@@ -45,6 +45,7 @@ export function createHero(): HTMLElement {
         alt="${building.alt}"
         fetchpriority="high"
       />
+      <div class="hero-stack__vignette" aria-hidden="true"></div>
       <div class="hero-stack__shade"></div>
       <ul class="hero-stack__cards">
         ${cards

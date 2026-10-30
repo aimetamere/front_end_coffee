@@ -22,6 +22,7 @@ export function createHeader(): HTMLElement {
   header.className = 'site-header';
   header.innerHTML = `
     <span class="site-header__sphere" aria-hidden="true"></span>
+    <span class="page-tint" aria-hidden="true"></span>
     <a class="site-header__logo" href="#">Café du Conservatoire</a>
     <button
       type="button"
@@ -69,7 +70,7 @@ export function createHeader(): HTMLElement {
     const x = rect.left + rect.width / 2;
     const y = rect.top + rect.height / 2;
     const width = window.innerWidth;
-    const height = window.innerHeight;
+    const height = Math.max(window.innerHeight, screen.height);
     const reach = Math.hypot(Math.max(x, width - x), Math.max(y, height - y));
 
     menu.style.setProperty('--bubble-x', `${x}px`);
@@ -78,10 +79,24 @@ export function createHeader(): HTMLElement {
     menu.style.setProperty('--bubble-reach', `${reach}px`);
   };
 
+  const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  const defaultThemeColor = themeColor?.content ?? '';
+
+  /** Tints the browser bars (status bar, Safari toolbar) to match the open menu. */
+  const setPageTint = (menuOpen: boolean) => {
+    document.documentElement.classList.toggle('is-menu-open', menuOpen);
+    if (themeColor) {
+      themeColor.content = menuOpen
+        ? getComputedStyle(document.documentElement).getPropertyValue('--bordeaux-profond').trim()
+        : defaultThemeColor;
+    }
+  };
+
   const open = () => {
     if (menu.open) return;
     setOrigin();
     menu.classList.remove('is-closing');
+    setPageTint(true);
     menu.showModal();
     document.documentElement.style.overflow = 'hidden';
     bubble.setAttribute('aria-expanded', 'true');
@@ -100,6 +115,7 @@ export function createHeader(): HTMLElement {
     if (!menu.open || menu.classList.contains('is-closing')) return;
     setOrigin();
     menu.classList.add('is-closing');
+    setPageTint(false);
     const animations = Promise.all(menu.getAnimations().map((animation) => animation.finished));
     const timeout = new Promise((resolve) => setTimeout(resolve, CLOSE_FALLBACK_MS));
     Promise.race([animations, timeout]).then(finishClose);
