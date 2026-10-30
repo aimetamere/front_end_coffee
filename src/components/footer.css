@@ -23,6 +23,19 @@
   font-style: italic;
 }
 
+.site-footer__label {
+  margin-bottom: 0.75rem;
+  font-family: var(--font-subtitle);
+  font-style: italic;
+}
+
+.site-footer .social-links {
+  --social-bg: var(--creme);
+  --social-color: var(--bordeaux-profond);
+
+  gap: 0.5rem;
+}
+
 .site-footer__copy {
   flex-basis: 100%;
   font-size: 0.85rem;

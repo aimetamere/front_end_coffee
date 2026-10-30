@@ -1,8 +1,6 @@
 @media (max-width: 768px) {
   /* Header */
   .site-header {
-    position: relative;
-    z-index: 10;
     flex-wrap: nowrap;
     padding: 1rem 1.25rem;
   }
@@ -42,23 +40,28 @@
       visibility 0s;
   }
 
-  .site-header__nav ul {
+  .site-header__links {
     flex-direction: column;
     gap: 0;
   }
 
-  .site-header__nav li + li {
+  .site-header__links li + li {
     border-top: 1px solid rgb(0 0 0 / 0.08);
   }
 
-  .site-header__nav a {
+  .site-header__links a {
     display: inline-block;
     padding: 1rem 0;
     font-size: 1rem;
   }
 
-  .site-header__nav a::after {
+  .site-header__links a::after {
     bottom: 0.75rem;
+  }
+  /* Hero */
+  .hero-stack {
+    --hero-card-height: min(46svh, 24rem);
+    --hero-edge: 1rem;
   }
 
   /* Carousel */

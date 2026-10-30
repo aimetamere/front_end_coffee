@@ -26,7 +26,7 @@ export function createHeader(): HTMLElement {
       <span class="menu-toggle__bar menu-toggle__bar--bottom"></span>
     </button>
     <nav id="site-nav" class="site-header__nav" aria-label="Navigation principale">
-      <ul>
+      <ul class="site-header__links">
         ${links.map((link) => `<li><a href="${link.href}">${link.label}</a></li>`).join('')}
       </ul>
     </nav>
@@ -34,7 +34,6 @@ export function createHeader(): HTMLElement {
 
   const toggle = header.querySelector<HTMLButtonElement>('.menu-toggle')!;
   const nav = header.querySelector<HTMLElement>('.site-header__nav')!;
-
   const setOpen = (open: boolean) => {
     header.classList.toggle('site-header--open', open);
     toggle.setAttribute('aria-expanded', String(open));

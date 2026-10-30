@@ -1,0 +1,103 @@
+.social-links {
+  --social-size: 36px;
+  --social-ease: ease-in-out;
+  --social-bg: var(--bg-color);
+  --social-color: var(--black);
+
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.social-links__item {
+  position: relative;
+}
+
+.social-links__link {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--social-size);
+  height: var(--social-size);
+  border-radius: 50%;
+  color: var(--social-color);
+  background-color: var(--social-bg);
+  transition: all 0.3s var(--social-ease);
+}
+
+.social-links__link svg {
+  position: relative;
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+}
+
+.social-links__filled {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  background-color: var(--black);
+  transition: all 0.3s var(--social-ease);
+}
+
+.social-links__link:hover,
+.social-links__link:focus-visible {
+  color: var(--bg-color);
+  box-shadow: 3px 2px 45px 0 rgb(0 0 0 / 0.12);
+  outline: none;
+}
+
+.social-links__link:hover .social-links__filled,
+.social-links__link:focus-visible .social-links__filled {
+  height: 100%;
+}
+
+.social-links__tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  z-index: 20;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: var(--bg-color);
+  background-color: var(--black);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+@media (hover: hover) {
+  .social-links__item:hover .social-links__tooltip,
+  .social-links__item:focus-within .social-links__tooltip {
+    bottom: calc(100% + 8px);
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+/* Brand colours */
+.social-links__link[data-social="instagram"] .social-links__filled,
+.social-links__link[data-social="instagram"] ~ .social-links__tooltip {
+  background: linear-gradient(45deg, #405de6, #5b51db, #b33ab4, #c135b4, #e1306c, #fd1f1f);
+}
+
+.social-links__link[data-social="linkedin"] .social-links__filled,
+.social-links__link[data-social="linkedin"] ~ .social-links__tooltip {
+  background-color: #0274b3;
+}
+
+.social-links__link[data-social="whatsapp"] .social-links__filled,
+.social-links__link[data-social="whatsapp"] ~ .social-links__tooltip {
+  background-color: #25d366;
+}

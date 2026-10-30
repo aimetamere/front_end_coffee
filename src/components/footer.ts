@@ -1,4 +1,5 @@
 import './footer.css';
+import { createSocialLinks } from '../style/button-social';
 
 export function createFooter(): HTMLElement {
   const footer = document.createElement('footer');
@@ -12,7 +13,12 @@ export function createFooter(): HTMLElement {
       <p>Adresse à venir</p>
       <p>Horaires à venir</p>
     </div>
+    <div class="site-footer__social">
+      <p class="site-footer__label">Suivez-nous</p>
+    </div>
     <p class="site-footer__copy">© ${new Date().getFullYear()} Café du Conservatoire</p>
   `;
+
+  footer.querySelector('.site-footer__social')!.append(createSocialLinks());
   return footer;
 }
