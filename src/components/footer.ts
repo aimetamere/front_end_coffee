@@ -10,7 +10,7 @@ export function createFooter(): HTMLElement {
       <p class="site-footer__tagline">Café · Musique · Bonne bouffe</p>
     </div>
     <div class="site-footer__info">
-      <p>Adresse à venir</p>
+      <p>info@cafeconservatoire.ch</p>
       <p>Horaires à venir</p>
     </div>
     <div class="site-footer__social">

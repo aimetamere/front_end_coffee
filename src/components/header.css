@@ -1,16 +1,33 @@
 .site-header {
+  --header-height: 5.25rem;
+  --sphere-size: 15rem;
+  --bubble-size: 4rem;
+  --bubble-ease: cubic-bezier(0.76, 0, 0.24, 1);
+
   position: relative;
   z-index: 10;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1.25rem 2rem;
-  border-bottom: 3px solid var(--bleu-noble);
+  height: var(--header-height);
+  padding: 0 calc(var(--bubble-size) + 3rem) 0 calc(var(--sphere-size) / 2 + 1.5rem);
+  background: var(--bg-color);
+}
+
+/* Blue decorative sphere bleeding off the top-left corner */
+.site-header__sphere {
+  position: absolute;
+  top: calc(var(--sphere-size) / -2 - 1rem);
+  left: calc(var(--sphere-size) / -2);
+  width: var(--sphere-size);
+  height: var(--sphere-size);
+  border-radius: 50%;
+  background: var(--bleu-noble);
+  pointer-events: none;
+  animation: sphere-in 1.2s var(--bubble-ease) backwards;
 }
 
 .site-header__logo {
+  position: relative;
   font-family: var(--font-title);
   font-weight: 700;
   font-size: 1.5rem;
@@ -18,114 +35,272 @@
   text-decoration: none;
 }
 
-.site-header__nav {
-  --nav-ease: cubic-bezier(0.25, 0.8, 0.25, 1);
-  --nav-duration: 400ms;
+/* Red menu bubble — fixed so the menu is always one tap away */
+.menu-bubble {
+  position: fixed;
+  top: calc((var(--header-height) - var(--bubble-size)) / 2);
+  right: 2rem;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: var(--bubble-size);
+  height: var(--bubble-size);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bordeaux-profond);
+  box-shadow: 0 10px 30px rgb(122 0 0 / 0.35);
+  cursor: pointer;
+  transition:
+    transform 0.5s var(--bubble-ease),
+    box-shadow 0.5s var(--bubble-ease);
+  animation: sphere-in 1.2s var(--bubble-ease) 0.15s backwards;
 }
 
-.site-header__links {
+.menu-bubble:hover {
+  transform: scale(1.08);
+  box-shadow: 0 14px 40px rgb(122 0 0 / 0.45);
+}
+
+.menu-bubble:focus-visible {
+  outline: 2px solid var(--bordeaux-profond);
+  outline-offset: 4px;
+}
+
+.menu-bubble__bar {
+  width: 1.375rem;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--creme);
+  transition: width 0.4s var(--bubble-ease);
+}
+
+.menu-bubble__bar:nth-child(2) {
+  width: 1rem;
+}
+
+.menu-bubble:hover .menu-bubble__bar:nth-child(2) {
+  width: 1.375rem;
+}
+
+/* Full-screen menu that grows out of the bubble */
+.bubble-menu {
+  --menu-duration: 0.8s;
+
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: var(--bordeaux-profond);
+  color: var(--creme);
+  clip-path: circle(var(--bubble-reach) at var(--bubble-x) var(--bubble-y));
+}
+
+.bubble-menu::backdrop {
+  background: transparent;
+}
+
+.bubble-menu[open] {
+  animation: bubble-grow var(--menu-duration) var(--bubble-ease);
+}
+
+.bubble-menu.is-closing {
+  animation: bubble-shrink var(--menu-duration) var(--bubble-ease) forwards;
+}
+
+.bubble-menu__close {
+  position: absolute;
+  top: calc(var(--bubble-y) - var(--bubble-r));
+  left: calc(var(--bubble-x) - var(--bubble-r));
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: calc(var(--bubble-r) * 2);
+  height: calc(var(--bubble-r) * 2);
+  padding: 0;
+  border: 1px solid rgb(213 176 135 / 0.5);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--creme);
+  cursor: pointer;
+  transition:
+    transform 0.5s var(--bubble-ease),
+    background-color 0.3s;
+}
+
+.bubble-menu__close svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.bubble-menu__close:hover {
+  transform: rotate(90deg);
+  background: rgb(213 176 135 / 0.12);
+}
+
+.bubble-menu__close:focus-visible {
+  outline: 2px solid var(--creme);
+  outline-offset: 4px;
+}
+
+/* Blue sphere echoing the menu card */
+.bubble-menu__sphere {
+  position: absolute;
+  bottom: -14vmax;
+  left: -16vmax;
+  width: 36vmax;
+  height: 36vmax;
+  border-radius: 50%;
+  background: var(--bleu-noble);
+  pointer-events: none;
+}
+
+.bubble-menu[open] .bubble-menu__sphere {
+  animation: sphere-in 1s var(--bubble-ease) 0.2s both;
+}
+
+.bubble-menu__content {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 3rem;
+  min-height: 100%;
+  padding: 7rem 6rem 4rem;
+}
+
+.bubble-menu__info {
+  align-self: flex-end;
+}
+
+.bubble-menu__links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.site-header__links a {
+.bubble-menu__links a {
   position: relative;
-  color: rgb(0 0 0 / 0.6);
-  font-size: 0.95rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  display: inline-block;
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  line-height: 1.1;
+  color: var(--creme);
   text-decoration: none;
-  transition: color var(--nav-duration) var(--nav-ease);
+  transition: color 0.3s;
 }
 
-.site-header__links a::after {
+.bubble-menu__links a::after {
   content: "";
   position: absolute;
-  bottom: -2px;
-  left: 50%;
-  width: 0%;
+  bottom: 0.1em;
+  left: 0;
+  width: 100%;
   height: 2px;
-  background-color: var(--black);
-  pointer-events: none;
-  transition-property: width, left;
-  transition-duration: var(--nav-duration);
-  transition-timing-function: var(--nav-ease);
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.4s cubic-bezier(0.65, 0.05, 0.36, 1);
 }
 
-.site-header__links a:hover,
-.site-header__links a:focus-visible {
-  color: var(--black);
+.bubble-menu__links a:hover,
+.bubble-menu__links a:focus-visible {
+  color: var(--bg-color);
   outline: none;
 }
 
-.site-header__links a:hover::after,
-.site-header__links a:focus-visible::after {
-  left: 0%;
-  width: 100%;
+.bubble-menu__links a:hover::after,
+.bubble-menu__links a:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
 }
 
-/* Burger toggle — shown on mobile only (see mobile-style.css) */
-.menu-toggle {
-  position: relative;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
-  transition-duration: 0.5s;
+.bubble-menu__info {
+  font-size: 0.95rem;
+  line-height: 1.7;
 }
 
-.menu-toggle__bar {
-  width: 100%;
-  height: 2px;
-  background-color: var(--black);
-  border-radius: 2px;
+.bubble-menu__info p {
+  margin: 0;
 }
 
-.menu-toggle__bar--middle {
-  transition-duration: 0.8s;
+.bubble-menu__label {
+  margin-bottom: 0.5rem !important;
+  font-family: var(--font-subtitle);
+  font-style: italic;
+  opacity: 0.8;
 }
 
-.menu-toggle__bar--top,
-.menu-toggle__bar--bottom {
-  width: 80%;
+.bubble-menu__info a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid rgb(213 176 135 / 0.4);
+  transition: border-color 0.3s;
 }
 
-.menu-toggle[aria-expanded="true"] {
-  transform: rotate(180deg);
-  transition-duration: 0.5s;
+.bubble-menu__info a:hover {
+  border-color: currentColor;
 }
 
-.menu-toggle[aria-expanded="true"] .menu-toggle__bar {
-  position: absolute;
-  transition-duration: 0.5s;
+/* Staggered reveal of the menu content */
+.bubble-menu[open] .bubble-menu__links li,
+.bubble-menu[open] .bubble-menu__info {
+  animation: menu-item-in 0.7s var(--bubble-ease) both;
+  animation-delay: calc(0.3s + var(--i) * 0.06s);
 }
 
-.menu-toggle[aria-expanded="true"] .menu-toggle__bar--middle {
-  transform: scaleX(0);
+.bubble-menu.is-closing .bubble-menu__content,
+.bubble-menu.is-closing .bubble-menu__close {
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
-.menu-toggle[aria-expanded="true"] .menu-toggle__bar--top {
-  width: 100%;
-  transform: rotate(45deg);
+@keyframes bubble-grow {
+  from {
+    clip-path: circle(var(--bubble-r) at var(--bubble-x) var(--bubble-y));
+  }
 }
 
-.menu-toggle[aria-expanded="true"] .menu-toggle__bar--bottom {
-  width: 100%;
-  transform: rotate(-45deg);
+@keyframes bubble-shrink {
+  to {
+    clip-path: circle(var(--bubble-r) at var(--bubble-x) var(--bubble-y));
+  }
 }
 
-.menu-toggle:focus-visible {
-  outline: 1px solid var(--black);
-  outline-offset: 4px;
+@keyframes sphere-in {
+  from {
+    transform: scale(0);
+  }
+}
+
+@keyframes menu-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header__sphere,
+  .menu-bubble,
+  .bubble-menu[open],
+  .bubble-menu.is-closing,
+  .bubble-menu[open] .bubble-menu__sphere,
+  .bubble-menu[open] .bubble-menu__links li,
+  .bubble-menu[open] .bubble-menu__info {
+    animation: none;
+  }
 }

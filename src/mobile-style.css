@@ -1,67 +1,51 @@
 @media (max-width: 768px) {
   /* Header */
   .site-header {
-    flex-wrap: nowrap;
-    padding: 1rem 1.25rem;
+    --header-height: 4.5rem;
+    --sphere-size: 9rem;
+    --bubble-size: 3.25rem;
+
+    padding-right: calc(var(--bubble-size) + 2rem);
+    padding-left: calc(var(--sphere-size) / 2 + 1rem);
   }
 
   .site-header__logo {
-    font-size: 1.25rem;
+    font-size: 1.15rem;
   }
 
-  .menu-toggle {
-    display: flex;
+  .menu-bubble {
+    right: 1.25rem;
   }
 
-  .site-header__nav {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    padding: 0.5rem 1.25rem 1.5rem;
-    background: var(--bg-color);
-    border-bottom: 1px solid rgb(0 0 0 / 0.1);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-0.5rem);
-    transition:
-      opacity 0.3s ease,
-      transform 0.3s ease,
-      visibility 0s linear 0.3s;
+  /* Bubble menu */
+  .bubble-menu__content {
+    padding: 6rem 1.5rem calc(2.5rem + env(safe-area-inset-bottom));
   }
 
-  .site-header--open .site-header__nav {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-    transition:
-      opacity 0.3s ease,
-      transform 0.3s ease,
-      visibility 0s;
+  .bubble-menu__links a {
+    font-size: clamp(2.25rem, 11vw, 3rem);
   }
 
-  .site-header__links {
-    flex-direction: column;
-    gap: 0;
+  .bubble-menu__info {
+    align-self: flex-end;
+    text-align: right;
+    font-size: 0.85rem;
   }
 
-  .site-header__links li + li {
-    border-top: 1px solid rgb(0 0 0 / 0.08);
-  }
-
-  .site-header__links a {
-    display: inline-block;
-    padding: 1rem 0;
-    font-size: 1rem;
-  }
-
-  .site-header__links a::after {
-    bottom: 0.75rem;
-  }
   /* Hero */
   .hero-stack {
     --hero-card-height: min(46svh, 24rem);
     --hero-edge: 1rem;
+  }
+
+  /* À propos */
+  .about {
+    padding: 3.5rem 1.25rem;
+  }
+
+  .about__text {
+    font-size: 0.95rem;
+    line-height: 1.7;
   }
 
   /* Carousel */
