@@ -1,18 +1,49 @@
 .hero-stack {
   --hero-card-height: min(68svh, 40rem);
   --hero-edge: 2rem;
+  --hero-header: 5.25rem;
+  --arch-gap: 0.5rem;
 
   position: relative;
-  height: 420svh;
+  /* Stacking-photo scroll runway, paused for now. */
+  /* height: 420svh; */
+  height: calc(100svh - var(--hero-header) - var(--safe-top));
+  background: var(--bg-color);
+  /* Keeps the hero's layers and shadows from painting outside it (clip, unlike hidden, keeps sticky working). */
+  overflow: clip;
+  isolation: isolate;
 }
 
 .hero-stack__sticky {
   position: sticky;
   top: 0;
-  height: 100vh;
-  height: 100svh;
+  height: 100%;
   overflow: hidden;
+  display: grid;
+  place-items: end center;
+  padding-top: 2rem;
+  container-type: size;
   background: var(--bg-color);
+}
+
+/* Arch: half-circle top, straight sides, flat base. The oversized radius resolves to half the width. */
+.hero-stack__photo {
+  position: relative;
+  width: min(86cqw, calc(92cqh * 4 / 5));
+  aspect-ratio: 4 / 5;
+  border-radius: 999px 999px 0 0;
+  animation: arch-rise 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Hairline arch drawn just outside the photo */
+.hero-stack__photo::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--arch-gap) * -1) calc(var(--arch-gap) * -1) 0;
+  border: 1px solid var(--creme);
+  border-bottom: 0;
+  border-radius: 999px 999px 0 0;
+  pointer-events: none;
 }
 
 .hero-stack__base {
@@ -20,129 +51,25 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  border-radius: 999px 999px 0 0;
   object-fit: cover;
-  transform: scale(1.08);
-  will-change: transform;
+  object-position: center bottom;
 }
 
-/* Blurs the edges of the base photo; the mask keeps the centre sharp. */
-.hero-stack__vignette {
-  --radius: 24px;
-  --inset: 10px;
-  --transition-length: 100px;
-  --blur: 15px;
-
-  --r: max(var(--transition-length), calc(var(--radius) - var(--inset)));
-  --corner-size: calc(var(--r) + var(--inset)) calc(var(--r) + var(--inset));
-  --corner-gradient: transparent 0px, transparent calc(var(--r) - var(--transition-length)), black var(--r);
-  --fill-gradient: black, black var(--inset), transparent calc(var(--inset) + var(--transition-length)),
-    transparent calc(100% - var(--transition-length) - var(--inset)), black calc(100% - var(--inset));
-  --fill-narrow-size: calc(100% - (var(--inset) + var(--r)) * 2);
-  --fill-farther-position: calc(var(--inset) + var(--r));
-
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  -webkit-backdrop-filter: blur(var(--blur));
-  backdrop-filter: blur(var(--blur));
-  -webkit-mask-image:
-    linear-gradient(to right, var(--fill-gradient)),
-    linear-gradient(to bottom, var(--fill-gradient)),
-    radial-gradient(at bottom right, var(--corner-gradient)),
-    radial-gradient(at bottom left, var(--corner-gradient)),
-    radial-gradient(at top left, var(--corner-gradient)),
-    radial-gradient(at top right, var(--corner-gradient));
-  mask-image:
-    linear-gradient(to right, var(--fill-gradient)),
-    linear-gradient(to bottom, var(--fill-gradient)),
-    radial-gradient(at bottom right, var(--corner-gradient)),
-    radial-gradient(at bottom left, var(--corner-gradient)),
-    radial-gradient(at top left, var(--corner-gradient)),
-    radial-gradient(at top right, var(--corner-gradient));
-  -webkit-mask-size:
-    100% var(--fill-narrow-size),
-    var(--fill-narrow-size) 100%,
-    var(--corner-size),
-    var(--corner-size),
-    var(--corner-size),
-    var(--corner-size);
-  mask-size:
-    100% var(--fill-narrow-size),
-    var(--fill-narrow-size) 100%,
-    var(--corner-size),
-    var(--corner-size),
-    var(--corner-size),
-    var(--corner-size);
-  -webkit-mask-position:
-    0 var(--fill-farther-position),
-    var(--fill-farther-position) 0,
-    0 0,
-    100% 0,
-    100% 100%,
-    0 100%;
-  mask-position:
-    0 var(--fill-farther-position),
-    var(--fill-farther-position) 0,
-    0 0,
-    100% 0,
-    100% 100%,
-    0 100%;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
+/* The looping photos replace the still façade on phones. */
+.hero-carousel {
+  display: none;
 }
 
-.hero-stack__shade {
-  position: absolute;
-  inset: 0;
-  background: var(--black);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.hero-stack__cards {
-  position: absolute;
-  inset: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  animation: hero-enter 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
-}
-
-.hero-stack__card {
-  position: absolute;
-  top: 50%;
-  right: var(--hero-edge);
-  height: var(--hero-card-height);
-  aspect-ratio: 2 / 3;
-  overflow: hidden;
-  border-radius: 6px;
-  box-shadow:
-    0 24px 60px rgb(0 0 0 / 0.35),
-    0 4px 12px rgb(0 0 0 / 0.2);
-  transform: translate3d(0, 100vh, 0);
-  transform-origin: top center;
-  will-change: transform;
-}
-
-.hero-stack__card img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  will-change: transform;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-@keyframes hero-enter {
+@keyframes arch-rise {
   from {
     opacity: 0;
-    transform: translateX(30%);
+    transform: translateY(1.5rem);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-stack__cards {
+  .hero-stack__photo {
     animation: none;
   }
 }

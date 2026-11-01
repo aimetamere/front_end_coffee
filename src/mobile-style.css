@@ -2,55 +2,491 @@
   /* Header */
   .site-header {
     --header-height: 4.5rem;
-    --sphere-size: 4rem;
+    --sphere-size: 10.5rem;
     --bubble-size: 3.25rem;
 
-    padding-right: calc(var(--bubble-size) + 2rem);
-    padding-left: calc(var(--sphere-size) / 2 + 1rem);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    width: 100%;
+    align-items: flex-start;
+    padding-top: calc(var(--safe-top) + 9px);
+    padding-right: calc(92px + 1rem + var(--safe-right));
+    padding-left: 0;
+    /* The page shows around the name, so it floats */
+    background: transparent;
+  }
+
+  /* Full-width red strip from the very top of the screen, so Safari's status bar
+     area turns red the same way it does when the menu is open. */
+  .site-header::before {
+    content: '';
+    position: fixed;
+    z-index: 40;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--safe-top) + 6px);
+    background: var(--bordeaux-profond);
+    pointer-events: none;
+  }
+
+  /* One shape: the thin band under the status bar, then a tab on the right for the menu.
+     The page's corner is rounded where it meets the tab. The path runs past the left,
+     top and right of the box so it always reaches the screen edges. */
+  .site-header__lip {
+    position: fixed;
+    z-index: 40;
+    top: var(--safe-top);
+    right: var(--safe-right);
+    display: block;
+    width: 120px;
+    height: 80px;
+    overflow: visible;
+    color: var(--bordeaux-profond);
+    fill: currentColor;
+    pointer-events: none;
   }
 
   .site-header__sphere {
-    top: 0.5rem;
-    height: calc(var(--sphere-size) * 1.6);
+    display: none;
   }
 
+  /* Pill flush with the left edge, title in cream inside it */
   .site-header__logo {
-    font-size: 1.15rem;
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    padding: 0.6rem 1.25rem 0.6rem calc(1rem + var(--safe-left));
+    border-radius: 0 999px 999px 0;
+    background: var(--bleu-noble);
+    color: var(--creme);
+    font-size: clamp(1rem, 4.6vw, 1.3rem);
+    line-height: 1.05;
+    white-space: nowrap;
+  }
+
+  /* Fills the red tab drawn by the lip */
+  .menu-bubble {
+    top: var(--safe-top);
+    right: var(--safe-right);
+    width: 92px;
+    height: 64px;
+    padding: 6px 0 0 4px;
+    border-radius: 0 0 0 20px;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .menu-bubble:hover,
+  .menu-bubble:focus-visible {
+    transform: none;
+    box-shadow: none;
+    outline: none;
   }
 
   .menu-bubble {
-    right: 1.25rem;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  /* Bubble menu */
+  /* Faster bars, so the cross is back to three bars before the sheet is gone */
+  .burger {
+    --bar-width: 2.25rem;
+    --bar-height: 1.5px;
+    --bar-gap: 7px;
+    --bar-inset: 0px;
+    --burger-speed: 0.22s;
+  }
+
+  .bubble-menu__close {
+    top: var(--safe-top);
+    right: var(--safe-right);
+    left: auto;
+    width: 92px;
+    height: 64px;
+    padding: 6px 0 0 4px;
+    border: 0;
+    border-radius: 0 0 0 20px;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* The dialog focuses the cross when it opens. Safari would draw a ring around the tab. */
+  .bubble-menu__close:hover,
+  .bubble-menu__close:focus-visible {
+    background: transparent;
+    outline: none;
+    transform: none;
+  }
+
+  /* Unfolds from the red tab into a full-width sheet and folds back into it. Starting from
+     the tab's exact shape (instead of a circle) keeps the edges from bulging past it. */
+  .bubble-menu {
+    --menu-duration: 0.6s;
+    --sheet-ease: cubic-bezier(0.32, 0.72, 0, 1);
+    --tab-clip: inset(
+      0 0 calc(100% - var(--safe-top) - 64px) calc(100% - 92px - var(--safe-right)) round 0 0 0
+        20px
+    );
+
+    height: auto;
+    max-height: min(80dvh, 36rem);
+    overflow: auto;
+    border-radius: 0 0 2.5rem 2.5rem;
+    clip-path: inset(0 round 0 0 2.5rem 2.5rem);
+  }
+
+  .bubble-menu[open] {
+    animation: sheet-open var(--menu-duration) var(--sheet-ease);
+  }
+
+  .bubble-menu.is-closing {
+    animation: sheet-close 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .bubble-menu.is-closing .bubble-menu__content,
+  .bubble-menu.is-closing .bubble-menu__sphere {
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .bubble-menu[open] .bubble-menu__sphere,
+  .bubble-menu[open] .bubble-menu__links li,
+  .bubble-menu[open] .bubble-menu__info {
+    animation: sheet-item-in 0.5s var(--sheet-ease) both;
+    animation-delay: calc(0.12s + var(--i, 0) * 0.04s);
+  }
+
+  @keyframes sheet-open {
+    from {
+      clip-path: var(--tab-clip);
+    }
+  }
+
+  @keyframes sheet-close {
+    to {
+      clip-path: var(--tab-clip);
+    }
+  }
+
+  @keyframes sheet-item-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bubble-menu[open],
+    .bubble-menu.is-closing,
+    .bubble-menu[open] .bubble-menu__sphere,
+    .bubble-menu[open] .bubble-menu__links li,
+    .bubble-menu[open] .bubble-menu__info {
+      animation: none;
+    }
+  }
+
+  /* Cover the strip under the toolbar so the top layer doesn't leave it white. */
+  .bubble-menu::backdrop {
+    position: fixed;
+    inset: 0;
+    height: 100lvh;
+  }
+
+  .bubble-menu__wordmark {
+    display: none;
+  }
+
+  /* Small arched wordmark centred at the top. The image has empty margins around the
+     lettering, and the lettering sits slightly left of the image's centre. */
+  .bubble-menu__sphere {
+    top: calc(var(--safe-top) - 0.25rem);
+    right: auto;
+    bottom: auto;
+    left: calc(50% - 3.25rem);
+    width: 6.8rem;
+    height: auto;
+    aspect-ratio: 1094 / 962;
+    overflow: visible;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .bubble-menu__mark {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* Links on the left, address along the bottom edge on the right. The margin keeps the
+     links higher than the address. */
   .bubble-menu__content {
-    padding: 6rem 1.5rem calc(2.5rem + (100lvh - 100svh) + env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: end;
+    column-gap: 1.5rem;
+    min-height: 0;
+    padding: calc(7.5rem + var(--safe-top)) calc(1rem + var(--safe-right)) 1.25rem
+      calc(2rem + var(--safe-left));
   }
 
+  .bubble-menu__content nav {
+    margin-bottom: 2.5rem;
+  }
+
+  .bubble-menu__links {
+    gap: 0;
+  }
+
+  /* Each link is a full-height tap target */
   .bubble-menu__links a {
-    font-size: clamp(2.25rem, 11vw, 3rem);
+    display: block;
+    padding-block: 0.4rem;
+    font-size: clamp(1.45rem, 7vw, 1.85rem);
+    -webkit-tap-highlight-color: transparent;
   }
 
+  .bubble-menu__links a::after {
+    bottom: 0.45rem;
+  }
+
+  .bubble-menu__links a:active {
+    color: var(--bg-color);
+  }
+
+  /* Address centred in the right column, on the bottom edge, text still reading from the left */
   .bubble-menu__info {
-    align-self: flex-end;
-    text-align: right;
-    font-size: 0.85rem;
+    justify-self: center;
+    align-self: end;
+    max-width: 12.5rem;
+    margin: 0;
+    font-size: 0.66rem;
+    line-height: 1.5;
+    text-align: left;
   }
 
-  /* Hero */
-  .hero-stack {
-    --hero-card-height: min(46svh, 24rem);
-    --hero-edge: 1rem;
+  .bubble-menu__label {
+    margin-bottom: 0.35rem !important;
   }
+
+  /* The screen-tall frame is gone. This one matches the façade photo. */
+  .hero-stack__sticky {
+    top: 0;
+    height: 100%;
+    padding-top: 0;
+    container-type: normal;
+  }
+
+  /* The sheet stops short of the screen. Keep the building painted through the strip
+     behind the toolbar, otherwise that strip is an empty white gap while the menu is open.
+     The root also stays as tall as the large viewport: locking scroll takes the body out
+     of flow, and a collapsed root is what Safari paints white at the bottom. */
+  html.is-menu-open {
+    min-height: 100lvh;
+  }
+
+  html.is-menu-open .hero-stack__sticky {
+    overflow: visible;
+  }
+
+  /* Full-bleed landscape frame, the same proportions as the façade photo, tucked under the header. */
+  .hero-stack__photo {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    border-radius: 0;
+    animation: none;
+  }
+
+  .hero-stack__photo::before {
+    content: none;
+  }
+
+  .hero-stack__base {
+    display: none;
+  }
+
+  .hero-carousel {
+    display: block;
+    position: absolute;
+    inset: 0;
+    border-radius: 0;
+  }
+
+  .hero-carousel__viewport {
+    height: 100%;
+    overflow: hidden;
+    border-radius: 0;
+  }
+
+  .hero-carousel__container {
+    display: flex;
+    height: 100%;
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .hero-carousel__slide {
+    flex: 0 0 100%;
+    min-width: 0;
+    height: 100%;
+  }
+
+  .hero-carousel__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .hero-carousel__image--building,
+  .hero-carousel__image--interior {
+    object-position: center;
+  }
+
+  /* Fills while the current photo is on screen, then the next one comes in. */
+  .hero-carousel__loader {
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    bottom: 0.85rem;
+    width: 4.5rem;
+    height: 3px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.45);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.55);
+    pointer-events: none;
+    translate: -50% 0;
+  }
+
+  .hero-carousel__loader-bar {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--creme);
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-carousel__loader {
+      display: none;
+    }
+  }
+
+  .hero-stack {
+    --hero-card-height: 50dvh;
+    --hero-edge: 1rem;
+    --hero-header: 4.5rem;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1313 / 860;
+    margin-top: calc((var(--hero-header) + var(--safe-top)) * -1);
+  }
+
+  /* .stacking-photos__card {
+    transform: translate3d(100dvw, -50%, 0);
+  } */
 
   /* À propos */
   .about {
-    padding: 3.5rem 1.25rem;
+    padding: 3.5rem calc(1.25rem + var(--safe-right)) 3.5rem calc(1.25rem + var(--safe-left));
   }
 
   .about__text {
     font-size: 0.95rem;
     line-height: 1.7;
+  }
+
+  /* Narrow slice of the photo beside the text. The arrow opens the whole picture. */
+  .about__inner {
+    grid-template-columns: minmax(0, 1fr) 4.25rem;
+    gap: 1rem;
+  }
+
+  .about__media {
+    align-self: stretch;
+    aspect-ratio: auto;
+  }
+
+  .about__photo {
+    border-radius: 0.875rem;
+    object-position: 44% center;
+  }
+
+  .about__toggle {
+    position: absolute;
+    top: 4.5rem;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--bordeaux-profond);
+    color: var(--creme);
+    box-shadow: 0 6px 18px rgb(0 0 0 / 0.25);
+    cursor: pointer;
+    translate: -50% 0;
+    transition: rotate 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .about__toggle svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .about__toggle:focus-visible {
+    outline: 2px solid var(--bordeaux-profond);
+    outline-offset: 3px;
+  }
+
+  /* Opened: the full picture on its own row above the text */
+  .about.is-expanded .about__inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .about.is-expanded .about__media {
+    order: -1;
+    aspect-ratio: 1024 / 473;
+    animation: about-open 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .about.is-expanded .about__photo {
+    border-radius: 1.25rem;
+    object-position: center;
+  }
+
+  .about.is-expanded .about__toggle {
+    top: auto;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    left: auto;
+    translate: none;
+    rotate: 90deg;
+  }
+
+  @keyframes about-open {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .about.is-expanded .about__media {
+      animation: none;
+    }
   }
 
   /* Carousel */
@@ -79,10 +515,11 @@
   .site-footer__main {
     flex-direction: column;
     gap: 1rem;
-    padding: 1.5rem 1.25rem 0.75rem;
+    padding: 1.5rem calc(1.25rem + var(--safe-right)) 0.75rem calc(1.25rem + var(--safe-left));
   }
 
   .site-footer__wave {
     height: 2rem;
   }
 }
+

@@ -1,5 +1,5 @@
 .site-footer {
-  background: var(--bg-color);
+  background: transparent;
 }
 
 .site-footer p {
@@ -11,7 +11,7 @@
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 1.5rem;
-  padding: 2rem 2rem 1rem;
+  padding: 2rem calc(2rem + var(--safe-right)) 1rem calc(2rem + var(--safe-left));
   background: var(--bordeaux-profond);
   color: var(--creme);
 }
@@ -45,7 +45,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.5rem 2rem calc(1.75rem + env(safe-area-inset-bottom));
+  padding: 0.5rem 2rem calc(1.75rem + var(--safe-bottom));
   color: var(--bordeaux-profond);
 }
 

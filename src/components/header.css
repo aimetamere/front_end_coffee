@@ -1,6 +1,6 @@
 .site-header {
   --header-height: 5.25rem;
-  --sphere-size: 15rem;
+  --sphere-size: 16rem;
   --bubble-size: 4rem;
   --bubble-ease: cubic-bezier(0.76, 0, 0.24, 1);
 
@@ -8,39 +8,28 @@
   z-index: 10;
   display: flex;
   align-items: center;
-  height: var(--header-height);
-  padding: 0 calc(var(--bubble-size) + 3rem) 0 calc(var(--sphere-size) / 2 + 1.5rem);
+  height: calc(var(--header-height) + var(--safe-top));
+  padding: var(--safe-top) calc(var(--bubble-size) + 3rem + var(--safe-right)) 0
+    calc(var(--sphere-size) * 0.62 + 1.35rem + var(--safe-left));
   background: var(--bg-color);
 }
 
-/* Blue decorative sphere bleeding off the top-left corner */
+/* Blue circle cut off by the top-left corner */
+.site-header__lip {
+  display: none;
+}
+
 .site-header__sphere {
   position: absolute;
-  top: calc(var(--sphere-size) / -2 - 1rem);
-  left: calc(var(--sphere-size) / -2);
+  top: calc(var(--sphere-size) * -0.42 + var(--safe-top));
+  left: calc(var(--sphere-size) * -0.4);
   width: var(--sphere-size);
   height: var(--sphere-size);
+  overflow: hidden;
   border-radius: 50%;
   background: var(--bleu-noble);
   pointer-events: none;
   animation: sphere-in 1.2s var(--bubble-ease) backwards;
-}
-
-/* Safari tints its bottom toolbar from fixed elements touching the bottom edge,
-   and ignores the menu dialog (top layer), so this strip stands in for it. */
-.page-tint {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  display: none;
-  height: 4rem;
-  background: var(--bordeaux-profond);
-  pointer-events: none;
-}
-
-.is-menu-open .page-tint {
-  display: block;
 }
 
 .site-header__logo {
@@ -55,14 +44,11 @@
 /* Red menu bubble — fixed so the menu is always one tap away */
 .menu-bubble {
   position: fixed;
-  top: calc((var(--header-height) - var(--bubble-size)) / 2);
-  right: 2rem;
+  top: calc(var(--safe-top) + (var(--header-height) - var(--bubble-size)) / 2);
+  right: calc(2rem + var(--safe-right));
   z-index: 50;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
+  display: grid;
+  place-items: center;
   width: var(--bubble-size);
   height: var(--bubble-size);
   padding: 0;
@@ -87,20 +73,76 @@
   outline-offset: 4px;
 }
 
-.menu-bubble__bar {
-  width: 1.375rem;
-  height: 2px;
-  border-radius: 2px;
+/* Three bars that fold into a cross (vk-uiux on Uiverse). The close button holds a copy
+   over the menu button, so the bars fold as the menu opens and unfold as it closes. */
+.burger {
+  --bar-width: 1.375rem;
+  --bar-height: 2px;
+  --bar-gap: 5px;
+  --bar-inset: 0.1875rem;
+  --burger-speed: 0.35s;
+  --burger-ease: cubic-bezier(0.5, -0.35, 0.35, 1.5);
+
+  position: relative;
+  display: block;
+  width: var(--bar-width);
+  height: calc(var(--bar-height) * 3 + var(--bar-gap) * 2);
+}
+
+.burger__bar {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: var(--bar-height);
+  border-radius: calc(var(--bar-height) / 2);
   background: var(--creme);
-  transition: width 0.4s var(--bubble-ease);
+  transition: none var(--burger-speed) var(--burger-ease) 0s;
 }
 
-.menu-bubble__bar:nth-child(2) {
-  width: 1rem;
+.burger__bar--top {
+  bottom: calc(50% + var(--bar-gap) + var(--bar-height) / 2);
+  transition-property: bottom, margin, transform;
+  transition-delay: var(--burger-speed), 0s, 0s;
 }
 
-.menu-bubble:hover .menu-bubble__bar:nth-child(2) {
-  width: 1.375rem;
+.burger__bar--middle {
+  top: calc(50% - var(--bar-height) / 2);
+  right: var(--bar-inset);
+  left: var(--bar-inset);
+  transition-property: top, opacity, left, right;
+  transition-duration: var(--burger-speed), 0s, 0.4s, 0.4s;
+  transition-delay: calc(var(--burger-speed) * 1.3), calc(var(--burger-speed) * 1.3), 0s, 0s;
+}
+
+.burger__bar--bottom {
+  top: calc(50% + var(--bar-gap) + var(--bar-height) / 2);
+  transition-property: top, transform;
+  transition-delay: 0s;
+}
+
+.menu-bubble:hover .burger__bar--middle {
+  right: 0;
+  left: 0;
+}
+
+.burger.is-cross .burger__bar--top {
+  bottom: calc(50% - var(--bar-gap) - var(--bar-height));
+  margin-bottom: calc(var(--bar-gap) + var(--bar-height) / 2);
+  transform: rotate(45deg);
+  transition-delay: calc(var(--burger-speed) * 0.3), calc(var(--burger-speed) * 1.3),
+    calc(var(--burger-speed) * 1.3);
+}
+
+.burger.is-cross .burger__bar--middle {
+  top: calc(50% + var(--bar-gap));
+  opacity: 0;
+  transition-delay: 0s, var(--burger-speed), 0s, 0s;
+}
+
+.burger.is-cross .burger__bar--bottom {
+  top: calc(50% - var(--bar-height) / 2);
+  transform: rotate(-45deg);
+  transition-delay: calc(var(--burger-speed) * 1.3), calc(var(--burger-speed) * 1.3);
 }
 
 /* Full-screen menu that grows out of the bubble */
@@ -120,7 +162,9 @@
   overflow: hidden;
   background: var(--bordeaux-profond);
   color: var(--creme);
-  clip-path: circle(var(--bubble-reach) at var(--bubble-x) var(--bubble-y));
+  clip-path: circle(
+    var(--bubble-reach) at var(--bubble-open-x, var(--bubble-x)) var(--bubble-open-y, var(--bubble-y))
+  );
 }
 
 .bubble-menu::backdrop {
@@ -155,11 +199,6 @@
     background-color 0.3s;
 }
 
-.bubble-menu__close svg {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
 .bubble-menu__close:hover {
   transform: rotate(90deg);
   background: rgb(213 176 135 / 0.12);
@@ -170,20 +209,42 @@
   outline-offset: 4px;
 }
 
-/* Blue sphere echoing the menu card */
+/* Blue sphere cut off at the bottom-left. The wordmark lives on the red, not in this circle. */
 .bubble-menu__sphere {
   position: absolute;
   bottom: -14vmax;
   left: -16vmax;
   width: 36vmax;
   height: 36vmax;
+  overflow: hidden;
   border-radius: 50%;
   background: var(--bleu-noble);
   pointer-events: none;
 }
 
+.bubble-menu__mark {
+  display: none;
+}
+
 .bubble-menu[open] .bubble-menu__sphere {
   animation: sphere-in 1s var(--bubble-ease) 0.2s both;
+}
+
+/* Wordmark on the open red field, clear of the links and the address */
+.bubble-menu__wordmark {
+  position: absolute;
+  z-index: 1;
+  top: 18%;
+  right: 10%;
+  display: block;
+  width: 14rem;
+  height: 14rem;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.bubble-menu[open] .bubble-menu__wordmark {
+  animation: sphere-in 1s var(--bubble-ease) 0.25s both;
 }
 
 .bubble-menu__content {
@@ -193,7 +254,8 @@
   justify-content: space-between;
   gap: 3rem;
   min-height: 100%;
-  padding: 7rem 6rem 4rem;
+  padding: calc(7rem + var(--safe-top)) calc(6rem + var(--safe-right)) calc(4rem + var(--safe-bottom))
+    calc(6rem + var(--safe-left));
 }
 
 .bubble-menu__info {
@@ -281,7 +343,7 @@
 }
 
 .bubble-menu.is-closing .bubble-menu__content,
-.bubble-menu.is-closing .bubble-menu__close {
+.bubble-menu.is-closing .bubble-menu__wordmark {
   opacity: 0;
   transition: opacity 0.2s;
 }
@@ -317,8 +379,13 @@
   .bubble-menu[open],
   .bubble-menu.is-closing,
   .bubble-menu[open] .bubble-menu__sphere,
+  .bubble-menu[open] .bubble-menu__wordmark,
   .bubble-menu[open] .bubble-menu__links li,
   .bubble-menu[open] .bubble-menu__info {
     animation: none;
+  }
+
+  .burger__bar {
+    transition: none;
   }
 }

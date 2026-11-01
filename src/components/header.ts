@@ -8,21 +8,25 @@ const links = [
   { label: 'Contact', href: '#contact' },
 ];
 
-/** Closes the menu even if the closing animation never reports finishing (e.g. background tabs). */
-const CLOSE_FALLBACK_MS = 900;
+/** Moves on even if a menu animation never reports finishing (e.g. background tabs). */
+const ANIMATION_FALLBACK_MS = 900;
+const mobileQuery = window.matchMedia('(max-width: 768px)');
 
-const closeIcon = `
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-    <path d="M18 6 6 18" />
-    <path d="m6 6 12 12" />
-  </svg>`;
+const burger = `
+  <span class="burger" aria-hidden="true">
+    <span class="burger__bar burger__bar--top"></span>
+    <span class="burger__bar burger__bar--middle"></span>
+    <span class="burger__bar burger__bar--bottom"></span>
+  </span>`;
 
 export function createHeader(): HTMLElement {
   const header = document.createElement('header');
   header.className = 'site-header';
   header.innerHTML = `
+    <svg class="site-header__lip" viewBox="0 0 120 80" aria-hidden="true">
+      <path d="M-2000 -100H140V64H48A20 20 0 0 1 28 44V22A16 16 0 0 0 12 6H-2000Z" />
+    </svg>
     <span class="site-header__sphere" aria-hidden="true"></span>
-    <span class="page-tint" aria-hidden="true"></span>
     <a class="site-header__logo" href="#">Café du Conservatoire</a>
     <button
       type="button"
@@ -32,14 +36,15 @@ export function createHeader(): HTMLElement {
       aria-expanded="false"
       aria-label="Ouvrir le menu"
     >
-      <span class="menu-bubble__bar"></span>
-      <span class="menu-bubble__bar"></span>
-      <span class="menu-bubble__bar"></span>
+      ${burger}
     </button>
 
     <dialog id="bubble-menu" class="bubble-menu" aria-label="Menu">
-      <span class="bubble-menu__sphere" aria-hidden="true"></span>
-      <button type="button" class="bubble-menu__close" aria-label="Fermer le menu">${closeIcon}</button>
+      <span class="bubble-menu__sphere" aria-hidden="true">
+        <img class="bubble-menu__mark" src="/logo-og.png" alt="" />
+      </span>
+      <img class="bubble-menu__wordmark" src="/logo-og.png" alt="" aria-hidden="true" />
+      <button type="button" class="bubble-menu__close" aria-label="Fermer le menu">${burger}</button>
       <div class="bubble-menu__content">
         <nav aria-label="Navigation principale">
           <ul class="bubble-menu__links">
@@ -64,49 +69,92 @@ export function createHeader(): HTMLElement {
   const bubble = header.querySelector<HTMLButtonElement>('.menu-bubble')!;
   const menu = header.querySelector<HTMLDialogElement>('.bubble-menu')!;
   const closeButton = header.querySelector<HTMLButtonElement>('.bubble-menu__close')!;
+  const closeBurger = closeButton.querySelector<HTMLElement>('.burger')!;
 
   const setOrigin = () => {
     const rect = bubble.getBoundingClientRect();
     const x = rect.left + rect.width / 2;
     const y = rect.top + rect.height / 2;
     const width = window.innerWidth;
-    const height = Math.max(window.innerHeight, screen.height);
-    const reach = Math.hypot(Math.max(x, width - x), Math.max(y, height - y));
+    const height = window.innerHeight;
 
     menu.style.setProperty('--bubble-x', `${x}px`);
     menu.style.setProperty('--bubble-y', `${y}px`);
     menu.style.setProperty('--bubble-r', `${rect.width / 2}px`);
-    menu.style.setProperty('--bubble-reach', `${reach}px`);
+
+    if (mobileQuery.matches) {
+      const root = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const panelHeight = Math.min(height * 0.8, 36 * root);
+      const reach = Math.hypot(Math.max(x, width - x), Math.max(y, panelHeight - y));
+      menu.style.setProperty('--bubble-reach', `${reach}px`);
+      menu.style.removeProperty('--bubble-open-x');
+      menu.style.removeProperty('--bubble-open-y');
+    } else {
+      const fullHeight = Math.max(height, screen.height);
+      const reach = Math.hypot(Math.max(x, width - x), Math.max(y, fullHeight - y));
+      menu.style.setProperty('--bubble-reach', `${reach}px`);
+      menu.style.removeProperty('--bubble-open-x');
+      menu.style.removeProperty('--bubble-open-y');
+    }
   };
 
-  const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-  const defaultThemeColor = themeColor?.content ?? '';
+  /** Resolves once the menu's current animation ends, or after a fallback delay. */
+  const settled = () => {
+    const animations = Promise.all(menu.getAnimations().map((animation) => animation.finished));
+    const timeout = new Promise((resolve) => setTimeout(resolve, ANIMATION_FALLBACK_MS));
+    return Promise.race([animations, timeout]);
+  };
 
-  /** Tints the browser bars (status bar, Safari toolbar) to match the open menu. */
-  const setPageTint = (menuOpen: boolean) => {
-    document.documentElement.classList.toggle('is-menu-open', menuOpen);
-    if (themeColor) {
-      themeColor.content = menuOpen
-        ? getComputedStyle(document.documentElement).getPropertyValue('--bordeaux-profond').trim()
-        : defaultThemeColor;
+  // Scroll position frozen while the menu is open. On phones, overflow:hidden on the
+  // root resizes the viewport and leaves a white strip under Safari's toolbar.
+  let lockedScroll = 0;
+
+  const lockPage = () => {
+    document.documentElement.classList.add('is-menu-open');
+    if (!mobileQuery.matches) {
+      document.documentElement.style.overflow = 'hidden';
+      return;
     }
+    lockedScroll = window.scrollY;
+    const { body } = document;
+    body.style.position = 'fixed';
+    body.style.top = `-${lockedScroll}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+  };
+
+  const unlockPage = () => {
+    const { body } = document;
+    const locked = body.style.position === 'fixed';
+    body.style.position = '';
+    body.style.top = '';
+    body.style.left = '';
+    body.style.right = '';
+    body.style.width = '';
+    document.documentElement.style.overflow = '';
+    document.documentElement.classList.remove('is-menu-open');
+    if (locked) window.scrollTo(0, lockedScroll);
   };
 
   const open = () => {
     if (menu.open) return;
     setOrigin();
     menu.classList.remove('is-closing');
-    setPageTint(true);
+    lockPage();
     menu.showModal();
-    document.documentElement.style.overflow = 'hidden';
     bubble.setAttribute('aria-expanded', 'true');
+    // The bars need one painted frame as three bars before they can fold into the cross.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => closeBurger.classList.add('is-cross'));
+    });
   };
 
   const finishClose = () => {
     if (!menu.classList.contains('is-closing')) return;
     menu.close();
     menu.classList.remove('is-closing');
-    document.documentElement.style.overflow = '';
+    unlockPage();
     bubble.setAttribute('aria-expanded', 'false');
     bubble.focus({ preventScroll: true });
   };
@@ -115,10 +163,8 @@ export function createHeader(): HTMLElement {
     if (!menu.open || menu.classList.contains('is-closing')) return;
     setOrigin();
     menu.classList.add('is-closing');
-    setPageTint(false);
-    const animations = Promise.all(menu.getAnimations().map((animation) => animation.finished));
-    const timeout = new Promise((resolve) => setTimeout(resolve, CLOSE_FALLBACK_MS));
-    Promise.race([animations, timeout]).then(finishClose);
+    closeBurger.classList.remove('is-cross');
+    settled().then(finishClose);
   };
 
   bubble.addEventListener('click', open);
@@ -127,6 +173,10 @@ export function createHeader(): HTMLElement {
   menu.addEventListener('cancel', (event) => {
     event.preventDefault();
     close();
+  });
+
+  menu.addEventListener('click', (event) => {
+    if (mobileQuery.matches && event.target === menu) close();
   });
 
   menu.querySelector('nav')!.addEventListener('click', (event) => {

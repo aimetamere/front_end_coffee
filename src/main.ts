@@ -5,6 +5,10 @@ import { createAbout } from './components/about';
 import { createFooter } from './components/footer';
 import './mobile-style.css';
 
+history.scrollRestoration = 'manual';
+window.scrollTo(0, 0);
+window.addEventListener('pageshow', () => window.scrollTo(0, 0));
+
 const app = document.querySelector<HTMLDivElement>('#app');
 
 if (app) {
