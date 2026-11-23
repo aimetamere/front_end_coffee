@@ -1,0 +1,301 @@
+/* Photo gallery under À propos: masonry columns, then a full-screen viewer. */
+.gallery {
+  --gallery-radius: 1.25rem;
+
+  /* Above the about section, so the about circle running into it stays behind the photos.
+     No background of its own: the page is white, and the circle shows through. */
+  position: relative;
+  z-index: 1;
+  /* 8rem on top matches the À propos bottom padding around the circle they share. */
+  padding: 8rem 2rem 6rem;
+  /* Crops its shapes at the screen sides and keeps them off the footer. */
+  overflow: clip;
+}
+
+.gallery__head,
+.gallery__grid {
+  position: relative;
+  z-index: 1;
+}
+
+/* Shapes continue down the page along the screen edges, behind the photos.
+   Each PNG is a 1000 × 1000 canvas with the shape centred; width is the canvas. */
+.gallery__shape {
+  position: absolute;
+  z-index: 0;
+  display: block;
+  height: auto;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+  translate: -50% -50%;
+}
+
+/* Sizes use --shape-u (style.css), shared with the hero and À propos shapes. */
+
+/* Blue oval (36% × 75% of its canvas: 32 × 66u, like the À propos cream oval), half off the right edge */
+.gallery__shape--oval {
+  top: 38%;
+  left: 100%;
+  width: calc(var(--shape-u) * 88);
+}
+
+/* Cream arch (31% × 81% of its canvas: 30 × 79u, like the hero's), half off the left edge, lower down */
+.gallery__shape--arch {
+  top: 64%;
+  left: 0;
+  width: calc(var(--shape-u) * 97);
+}
+
+.gallery__head {
+  max-width: 78rem;
+  margin: 0 auto 2.5rem;
+}
+
+/* Same type as the À propos title */
+.gallery__title {
+  margin: 0;
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.1;
+  color: var(--black);
+}
+
+/* Masonry: photos flow down three columns, each one the full column width. */
+.gallery__grid {
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  column-count: 3;
+  column-gap: 1.25rem;
+}
+
+.gallery__item {
+  margin-bottom: 1.25rem;
+  break-inside: avoid;
+}
+
+.gallery__tile {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--gallery-radius);
+  overflow: hidden;
+  /* Solid while the photo loads, so the shapes behind never show through a tile. */
+  background: #f4f4f4;
+  cursor: zoom-in;
+}
+
+.gallery__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition:
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.3s;
+}
+
+.gallery__tile:hover .gallery__image {
+  transform: scale(1.04);
+  filter: brightness(0.92);
+}
+
+.gallery__tile:focus-visible {
+  outline: 2px solid var(--bordeaux-profond);
+  outline-offset: 3px;
+}
+
+/* Viewer: a full-screen modal dialog over a dim, blurred page. */
+.gallery-lightbox {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bg-color);
+  font-family: var(--font-body);
+  overflow: hidden;
+}
+
+.gallery-lightbox::backdrop {
+  background: rgb(0 0 0 / 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.gallery-lightbox[open] {
+  animation: gallery-fade 0.3s ease-out;
+}
+
+.gallery-lightbox[open]::backdrop {
+  animation: gallery-fade 0.3s ease-out;
+}
+
+/* Large photo and the thumbnail strip side by side, centred. Clicks on the empty
+   space around them close the viewer. */
+.gallery-lightbox__stage {
+  --strip-w: 6.5rem;
+  --stage-gap: 1.25rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--stage-gap);
+  width: 100%;
+  height: 100%;
+  padding: 4.5rem 2rem;
+}
+
+/* Whole photo, never cropped */
+.gallery-lightbox__image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: calc(100% - var(--strip-w) - var(--stage-gap));
+  max-height: 70vh;
+  max-height: 70svh;
+  border-radius: var(--gallery-radius, 1.25rem);
+  object-fit: contain;
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
+}
+
+.gallery-lightbox__image.is-swapping {
+  animation: gallery-swap 0.35s ease-out;
+}
+
+/* Vertical strip of every photo. Drag (or scroll) to move through it. */
+.gallery-lightbox__strip {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: var(--strip-w);
+  max-height: 70vh;
+  max-height: 70svh;
+  padding: 0.25rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.gallery-lightbox__strip::-webkit-scrollbar {
+  display: none;
+}
+
+.gallery-lightbox__strip.is-dragging {
+  cursor: grabbing;
+}
+
+.gallery-lightbox__thumb {
+  flex: none;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  background: transparent;
+  opacity: 0.5;
+  cursor: inherit;
+  transition:
+    opacity 0.25s,
+    box-shadow 0.25s;
+}
+
+.gallery-lightbox__thumb img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+.gallery-lightbox__thumb:hover {
+  opacity: 0.85;
+}
+
+.gallery-lightbox__thumb.is-active {
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--creme);
+}
+
+.gallery-lightbox__thumb:focus-visible {
+  outline: 2px solid var(--creme);
+  outline-offset: 2px;
+}
+
+.gallery-lightbox__close {
+  /* Sits exactly on the red menu bubble (same size and place, see header.css), so the
+     bubble reads as turning into the × while a photo is open. */
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--safe-top) + (5.25rem - 4rem) / 2);
+  right: calc(2rem + var(--safe-right));
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bordeaux-profond);
+  color: var(--creme);
+  font-family: var(--font-title);
+  font-size: 2.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gallery-lightbox__close span {
+  display: block;
+  margin-top: -0.12em;
+}
+
+.gallery-lightbox__close:hover {
+  transform: rotate(90deg);
+}
+
+.gallery-lightbox__close:focus-visible {
+  outline: 2px solid var(--creme);
+  outline-offset: 3px;
+}
+
+@keyframes gallery-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes gallery-swap {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery__image,
+  .gallery-lightbox__close {
+    transition: none;
+  }
+
+  .gallery__tile:hover .gallery__image {
+    transform: none;
+  }
+
+  .gallery-lightbox[open],
+  .gallery-lightbox[open]::backdrop,
+  .gallery-lightbox__image.is-swapping {
+    animation: none;
+  }
+}

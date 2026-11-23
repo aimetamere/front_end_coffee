@@ -60,3 +60,138 @@
 .about__toggle {
   display: none;
 }
+
+/* Call to action under the text and the photo: opens the menu page. */
+.about__cta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  max-width: 78rem;
+  margin: 3.5rem auto 0;
+}
+
+.about__cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.95rem 1.9rem;
+  border-radius: 999px;
+  background: var(--bordeaux-profond);
+  color: var(--creme);
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 1.25rem;
+  text-decoration: none;
+  box-shadow: 0 10px 28px rgb(122 0 0 / 0.25);
+  transition:
+    background-color 0.3s,
+    box-shadow 0.3s;
+}
+
+.about__cta-link svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.about__cta-link:hover {
+  background: #5c0000;
+  box-shadow: 0 14px 36px rgb(122 0 0 / 0.35);
+}
+
+.about__cta-link:hover svg {
+  transform: translateX(4px);
+}
+
+.about__cta-link:active {
+  background: #470000;
+}
+
+.about__cta-link:focus-visible {
+  outline: 2px solid var(--bordeaux-profond);
+  outline-offset: 4px;
+}
+
+/* Decorative shapes are desktop only. */
+.about__shape {
+  display: none;
+}
+
+/* Desktop: the photo is as tall as the copy, and three shapes from public/shapes/ fill the
+   empty space. Each PNG is a 1000 × 1000 canvas with the shape centred, so width is the
+   canvas size and translate centres it on its anchor. */
+@media (min-width: 769px) {
+  /* Shapes are cropped by the screen sides and the top (so nothing paints over the hero),
+     but may run past the bottom into the gallery, which sits above this section. */
+  .about {
+    position: relative;
+    z-index: 0;
+    isolation: isolate;
+    clip-path: inset(0 0 -20rem 0);
+    /* clip-path only hides the paint; this keeps edge shapes from widening the page. */
+    overflow-x: clip;
+    /* Room for the blue circle that straddles into the gallery (see below). */
+    padding-bottom: 8rem;
+  }
+
+  /* Wider photo column; the row still takes the copy's height. */
+  .about__inner {
+    position: relative;
+    z-index: 1;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr);
+    align-items: stretch;
+    max-width: 78rem;
+  }
+
+  .about__copy {
+    position: relative;
+    align-self: center;
+  }
+
+  /* No aspect ratio: the grid row stretches it to the copy's height and the photo fills it. */
+  .about__media {
+    aspect-ratio: auto;
+  }
+
+  .about__shape {
+    position: absolute;
+    display: block;
+    height: auto;
+    max-width: none;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Same blue circle as the hero (32u across, --shape-u in style.css). Its centre sits 3rem
+     past the left edge, on the line between this section and the gallery, so it straddles
+     both. 8rem of padding on each side of that line keeps it clear of both texts. */
+  .about__shape--circle {
+    z-index: 0;
+    bottom: 0;
+    left: -3rem;
+    width: calc(var(--shape-u) * 88);
+    translate: -50% 50%;
+  }
+
+  /* Cream oval (36% × 75% of its canvas: 32 × 66u), centred on the right edge like every
+     other shape, behind the photo's top-right corner and cut off by the top. */
+  .about__shape--cream {
+    z-index: 0;
+    top: 6rem;
+    left: 100%;
+    width: calc(var(--shape-u) * 88);
+    translate: -50% -50%;
+  }
+
+  /* Small bordeaux oval (24% × 68% of its canvas: 3 × 8.4rem) just left of the title, behind
+     the copy, so it never sits on the letters. On narrow screens the section edge crops it. */
+  .about__shape--oval {
+    z-index: -1;
+    top: -2.25rem;
+    right: calc(100% + 1rem);
+    width: 12.5rem;
+    translate: 38% 0;
+  }
+}
+

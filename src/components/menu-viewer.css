@@ -1,0 +1,184 @@
+/* Menu page: title and download button, then the PDF pages stacked in one column. */
+.menu-page {
+  --menu-column: 56rem;
+
+  /* On desktop the header takes no height; this clears the fixed red menu bubble. */
+  padding: calc(7rem + var(--safe-top)) calc(2rem + var(--safe-right)) 5rem
+    calc(2rem + var(--safe-left));
+  background: var(--bg-color);
+}
+
+.menu-page__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem 2rem;
+  max-width: var(--menu-column);
+  margin: 0 auto 2.5rem;
+}
+
+.menu-page__title {
+  margin: 0;
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.1;
+  color: var(--black);
+}
+
+/* Download button: the Uiverse hover (the label slides away while the icon panel grows to
+   fill the button), in the site's bordeaux and cream. */
+.menu-download {
+  --dl-deep: #5c0000;
+  --dl-press: #470000;
+  --dl-icon-w: 3rem;
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 12rem;
+  height: 3rem;
+  overflow: hidden;
+  border: 1px solid var(--dl-deep);
+  background: var(--bordeaux-profond);
+  color: var(--creme);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.menu-download__text {
+  flex: 1;
+  padding-right: var(--dl-icon-w);
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-align: center;
+  transition:
+    color 0.3s,
+    transform 0.3s;
+}
+
+.menu-download__icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--dl-icon-w);
+  background: var(--dl-deep);
+  transition:
+    width 0.3s,
+    background-color 0.3s;
+}
+
+.menu-download__icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.menu-download:hover,
+.menu-download:focus-visible {
+  background: var(--dl-deep);
+}
+
+.menu-download:hover .menu-download__text,
+.menu-download:focus-visible .menu-download__text {
+  color: transparent;
+  transform: translateX(-1rem);
+}
+
+.menu-download:hover .menu-download__icon,
+.menu-download:focus-visible .menu-download__icon {
+  width: 100%;
+}
+
+.menu-download:active {
+  border-color: var(--dl-press);
+}
+
+.menu-download:active .menu-download__icon {
+  background: var(--dl-press);
+}
+
+.menu-download:focus-visible {
+  outline: 2px solid var(--bordeaux-profond);
+  outline-offset: 3px;
+}
+
+/* The pages: each one the full column width, at its own A4 proportion (set in menu-viewer.ts). */
+.menu-pdf {
+  display: grid;
+  gap: 1.5rem;
+  max-width: var(--menu-column);
+  margin: 0 auto;
+}
+
+.menu-pdf__page {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: #f4f4f4;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.08);
+  aspect-ratio: 595.5 / 842.25;
+}
+
+.menu-pdf__page canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.menu-pdf__page.is-painted canvas {
+  opacity: 1;
+}
+
+.menu-pdf__status {
+  margin: 0;
+  padding: 3rem 0;
+  font-family: var(--font-body);
+  text-align: center;
+  color: rgb(0 0 0 / 0.6);
+}
+
+.menu-pdf__status a {
+  color: var(--bordeaux-profond);
+}
+
+@media (max-width: 768px) {
+  /* Menu page: the header is in the page flow here, so less space above. Pages stay the
+     full column width; the download button is full width and easy to tap. */
+  .menu-page {
+    padding: 1.5rem calc(1rem + var(--safe-right)) 3.5rem calc(1rem + var(--safe-left));
+  }
+
+  .menu-page__head {
+    margin-bottom: 1.5rem;
+  }
+
+  .menu-download {
+    width: 100%;
+    height: 3.25rem;
+  }
+
+  .menu-pdf {
+    gap: 1rem;
+  }
+
+  .menu-pdf__page {
+    border-radius: 0.375rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-download__text,
+  .menu-download__icon,
+  .menu-pdf__page canvas {
+    transition: none;
+  }
+}

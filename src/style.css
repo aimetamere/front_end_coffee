@@ -36,6 +36,11 @@
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
+
+  /* One size unit for every decorative shape (hero, À propos, gallery), so each shape type
+     is the same size wherever it appears. Follows the screen height, held back on narrow
+     windows, and kept between 6px and 10px. */
+  --shape-u: clamp(6px, min(1svh, 0.625vw), 10px);
 }
 
 *,
@@ -91,4 +96,44 @@ main {
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* Section titles ("Galerie", "Le menu"): the same bordeaux oval (Shape2) as "À propos de
+   nous", at the same size, gap and height (about.css on desktop, mobile-style.css on a
+   phone). The wrapper is positioned and isolated so the oval sits behind its own title
+   only. */
+.section-heading {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Desktop: canvas 12.5rem (the oval 3 × 8.5rem), 1rem left of the title, its top level
+   with the title's. Cropped by the screen edge where there is no room. */
+.section-heading__oval {
+  position: absolute;
+  z-index: -1;
+  top: -2.25rem;
+  right: calc(100% + 1rem);
+  display: block;
+  width: 12.5rem;
+  height: auto;
+  max-width: none;
+  translate: 38% 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Phone: the title is indented and the oval (canvas 4.6rem: 1.1 × 3.1rem) sits in the indent. */
+@media (max-width: 768px) {
+  .section-heading > :is(h1, h2) {
+    padding-left: 1.85rem;
+  }
+
+  .section-heading__oval {
+    top: calc(4.6rem * -0.161 - 0.1rem);
+    right: auto;
+    left: calc(4.6rem * -0.38);
+    width: 4.6rem;
+    translate: none;
+  }
 }

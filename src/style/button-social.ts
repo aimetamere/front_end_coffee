@@ -1,43 +1,23 @@
 import './button-social.css';
 
 type Social = {
-  id: 'instagram' | 'linkedin' | 'whatsapp';
+  id: 'instagram';
   label: string;
   href: string;
   icon: string;
 };
 
+/** Only Instagram for now; the footer is the one place these links appear. */
 const socials: Social[] = [
   {
     id: 'instagram',
     label: 'Instagram',
-    href: 'https://www.instagram.com/',
+    href: 'https://www.instagram.com/cafeduconservatoire/',
     icon: `
       <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
         <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
         <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-      </svg>`,
-  },
-  {
-    id: 'linkedin',
-    label: 'LinkedIn',
-    href: 'https://www.linkedin.com/',
-    icon: `
-      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-        <rect x="2" y="9" width="4" height="12" />
-        <circle cx="4" cy="4" r="2" />
-      </svg>`,
-  },
-  {
-    id: 'whatsapp',
-    label: 'WhatsApp',
-    href: 'https://wa.me/',
-    icon: `
-      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
-        <path d="M9 8.5c0 3.6 2.9 6.5 6.5 6.5l.9-1.6-1.9-1-.9.8a4 4 0 0 1-2.8-2.8l.8-.9-1-1.9z" />
       </svg>`,
   },
 ];

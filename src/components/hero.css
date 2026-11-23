@@ -56,7 +56,167 @@
   object-position: center bottom;
 }
 
-/* The looping photos replace the still façade on phones. */
+/* First screen on every width: the arch photo, the name wrapped around it, three cropped
+   shapes. hero.ts draws the wordmark in units where the photo is 100 × 125, so the SVG is
+   sized from --arch-w and both always scale together. Each width sets --arch-w, --stage-h
+   (the pinned frame) and the runway height; mobile-style.css does it for phones. */
+.hero-stack {
+  /* Fits the arch plus the letters above it in the screen height, and their width in the screen width. */
+  --arch-w: min(66svh, 52vw);
+  /* Matches ARCH_GAP (1.5 units of 100) in hero.ts */
+  --arch-gap: calc(var(--arch-w) * 0.015);
+  --arch-h: calc(var(--arch-w) * 5 / 4);
+  /* Space under the resting arch's base. 0 on desktop, where the base is the screen edge. */
+  --arch-lift: 0px;
+  /* Scroll growth: hero.ts sets --grow (0 → 1) across the runway. Stays 0 for reduced motion. */
+  --grow: 0;
+  /* hero.ts fades the wordmark out (--fade 0 → 1) before the arch starts growing. */
+  --fade: 0;
+  --stage-h: 100svh;
+  /* Scroll runway: the sticky frame stays pinned while the arch grows. */
+  height: 200svh;
+}
+
+.hero-stack__sticky {
+  height: var(--stage-h);
+  padding-top: 0;
+}
+
+/* The resting arch grows into the full pinned frame; the top flattens as it widens. */
+.hero-stack__photo {
+  --arch-r: calc(var(--arch-w) / 2 * (1 - var(--grow)));
+  z-index: 1;
+  width: calc(var(--arch-w) + (100cqw - var(--arch-w)) * var(--grow));
+  height: calc(var(--arch-h) + (var(--stage-h) - var(--arch-h)) * var(--grow));
+  margin-bottom: calc(var(--arch-lift) * (1 - var(--grow)));
+  aspect-ratio: auto;
+  border-radius: var(--arch-r) var(--arch-r) 0 0;
+}
+
+.hero-stack__photo::before {
+  border-radius: calc(var(--arch-r) + var(--arch-gap)) calc(var(--arch-r) + var(--arch-gap)) 0 0;
+  opacity: calc(1 - var(--grow));
+}
+
+.hero-stack__base {
+  border-radius: inherit;
+}
+
+.hero-shape {
+  position: absolute;
+  z-index: 0;
+  display: block;
+  height: auto;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+  translate: -50% -50%;
+}
+
+/* Each PNG is a 1000 × 1000 canvas with the shape centred in it. Sizes are the canvas;
+   top/left place the shape's centre. */
+
+/* Shape sizes use --shape-u (style.css), shared with the À propos and gallery shapes. */
+
+/* The frame repeated on every page of the menu PDF: a bordeaux shape entering from the
+   left, a blue circle in the bottom-left corner, a tall cream arch cropped by the right
+   edge, and a small bordeaux circle at the foot of that arch, partly over it. */
+
+/* Bordeaux ellipse (Shape7, 50% × 80% of its canvas: 32 × 51u), half off the left edge,
+   high on the screen like the menu's */
+.hero-shape--left {
+  top: 14%;
+  left: 0;
+  width: calc(var(--shape-u) * 64);
+}
+
+/* Blue circle (Shape3, 36% of its canvas: 43u across), centred on the bottom-left corner */
+.hero-shape--circle {
+  top: 100%;
+  left: 0;
+  width: calc(var(--shape-u) * 120);
+}
+
+/* Cream arch (Shape6, 48.6% × 89.8% of its canvas: 44 × 81u), half off the right edge,
+   its base running off the bottom */
+.hero-shape--arch {
+  --arch-shape-w: calc(var(--shape-u) * 90);
+  top: calc(100% - var(--arch-shape-w) * 0.26);
+  left: 100%;
+  width: var(--arch-shape-w);
+}
+
+/* Bordeaux circle (Shape8, 64% of its canvas: 22u across), centred just inside the cream
+   arch's left side at the bottom edge, so it sits over the arch's foot and clears the
+   lettering. Drawn after the arch. */
+.hero-shape--dot {
+  top: calc(100% - var(--shape-u) * 4);
+  /* On narrow desktops it moves right so it never reaches the lettering, which ends about
+     0.71 arch widths right of centre. 11u is the circle's radius. */
+  left: max(100% - var(--shape-u) * 19, 50% + var(--arch-w) * 0.73 + var(--shape-u) * 11);
+  width: calc(var(--shape-u) * 34);
+}
+
+.hero-wordmark {
+  position: absolute;
+  z-index: 2;
+  bottom: calc(var(--arch-lift) * (1 - var(--grow)));
+  left: 50%;
+  display: block;
+  /* viewBox is 160 × 155 units, the photo 100 units wide */
+  width: calc(var(--arch-w) * 1.6);
+  translate: -50% 0;
+  color: var(--creme);
+  text-decoration: none;
+  /* Only the letters take clicks, not the box around the photo. */
+  pointer-events: none;
+  /* Gone before the arch starts to grow, so the photo never reaches the letters. */
+  opacity: calc(1 - var(--fade));
+  animation: arch-rise 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+.hero-wordmark:focus-visible {
+  outline: none;
+}
+
+.hero-wordmark:focus-visible .hero-wordmark__text {
+  text-decoration: underline;
+}
+
+.hero-wordmark__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.hero-wordmark__path {
+  fill: none;
+  stroke: none;
+}
+
+.hero-wordmark__text,
+.hero-wordmark__measure {
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 20px;
+  text-transform: uppercase;
+  fill: currentColor;
+}
+
+.hero-wordmark__text {
+  /* Fallback; hero.ts sets the exact spacing so the phrase spans the path. */
+  letter-spacing: 0.1em;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.hero-wordmark__measure {
+  visibility: hidden;
+}
+
+/* The looping carousel (building and interior slides, progress loader) is not shown;
+   its code is kept in hero.ts and mobile-style.css. */
 .hero-carousel {
   display: none;
 }
@@ -69,7 +229,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-stack__photo {
+  .hero-stack__photo,
+  .hero-wordmark {
     animation: none;
   }
 }

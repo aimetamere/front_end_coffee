@@ -12,6 +12,26 @@ const interior = {
   alt: 'La salle du café, avec ses tables, ses chaises rouges et bleues et ses suspensions lumineuses',
 };
 
+/*
+ * Desktop wordmark geometry, in units where the arch photo is 100 wide and 125 tall
+ * (x 0–100, y 0–125, flat base on y = 125). The photo's half-circle has its centre at (50, 50).
+ * The hairline sits ARCH_GAP outside the photo (matches --arch-gap in hero.css), and the
+ * letters' baseline sits TEXT_GAP outside the hairline. The SVG is sized from --arch-w,
+ * so the arch and the wordmark always scale together.
+ */
+const ARCH_GAP = 1.5;
+const TEXT_GAP = 4;
+const WORDMARK_R = 50 + ARCH_GAP + TEXT_GAP;
+/** Path ends on the photo's flat base, which is the bottom of the screen. */
+const WORDMARK_BASE = 125;
+// Lower left → up the left side → over the top → down the right side. Letters stand outward.
+const WORDMARK_PATH = `M ${50 - WORDMARK_R} ${WORDMARK_BASE} V 50 A ${WORDMARK_R} ${WORDMARK_R} 0 0 1 ${50 + WORDMARK_R} 50 V ${WORDMARK_BASE}`;
+const WORDMARK_VIEWBOX = '-30 -30 160 155';
+const WORDMARK_TEXT = 'CAFÉ DU CONSERVATOIRE';
+
+/** The mobile photo carousel (kept, not shown). Turn back on together with its CSS. */
+const SHOW_CAROUSEL = false;
+
 /** How long each photo stays before the loader sends the next one. */
 const SLIDE_MS = 5200;
 const mobileQuery = window.matchMedia('(max-width: 768px)');
@@ -34,6 +54,17 @@ export function createHero(): HTMLElement {
 
   section.innerHTML = `
     <div class="hero-stack__sticky">
+      <img class="hero-shape hero-shape--left" src="/shapes/Shape7.png" alt="" aria-hidden="true" width="1000" height="1000" />
+      <img class="hero-shape hero-shape--circle" src="/shapes/Shape3.png" alt="" aria-hidden="true" width="1000" height="1000" />
+      <img class="hero-shape hero-shape--arch" src="/shapes/Shape6.png" alt="" aria-hidden="true" width="1000" height="1000" />
+      <img class="hero-shape hero-shape--dot" src="/shapes/Shape8.png" alt="" aria-hidden="true" width="1000" height="1000" />
+      <a class="hero-wordmark" href="#" aria-label="Café du Conservatoire, accueil">
+        <svg class="hero-wordmark__svg" viewBox="${WORDMARK_VIEWBOX}" aria-hidden="true" focusable="false">
+          <path id="hero-wordmark-path" class="hero-wordmark__path" d="${WORDMARK_PATH}" />
+          <text class="hero-wordmark__measure">${WORDMARK_TEXT}</text>
+          <text class="hero-wordmark__text"><textPath href="#hero-wordmark-path">${WORDMARK_TEXT}</textPath></text>
+        </svg>
+      </a>
       <div class="hero-stack__photo">
         <img
           class="hero-stack__base"
@@ -139,9 +170,79 @@ export function createHero(): HTMLElement {
   // window.addEventListener('resize', measure);
   // requestAnimationFrame(measure);
 
-  mountMobileCarousel(section);
+  // The looping carousel is hidden for now: phones show the same arch as desktop.
+  if (SHOW_CAROUSEL) mountMobileCarousel(section);
+  fitWordmark(section);
+  mountArchGrowth(section);
 
   return section;
+}
+
+/** Share of the runway spent fading the wordmark before the arch starts to grow. */
+const FADE_SHARE = 0.15;
+
+/** The arch grows to fill the pinned hero as the page scrolls through the runway. */
+function mountArchGrowth(section: HTMLElement) {
+  const sticky = section.querySelector<HTMLElement>('.hero-stack__sticky');
+  if (!sticky) return;
+
+  const clamp = (value: number) => Math.min(1, Math.max(0, value));
+  let frame = 0;
+  let active = false;
+
+  const update = () => {
+    frame = 0;
+    if (reducedMotion.matches) {
+      section.style.removeProperty('--grow');
+      section.style.removeProperty('--fade');
+      return;
+    }
+    // The frame pins at its sticky top: 0 on desktop, under the header on phones.
+    const stickTop = parseFloat(getComputedStyle(sticky).top) || 0;
+    const runway = section.offsetHeight - sticky.offsetHeight;
+    const progress = runway > 0 ? clamp((stickTop - section.getBoundingClientRect().top) / runway) : 0;
+    // The wordmark fades out first, with the arch at rest, so the growing photo never runs into the letters.
+    section.style.setProperty('--fade', clamp(progress / FADE_SHARE).toFixed(4));
+    section.style.setProperty('--grow', clamp((progress - FADE_SHARE) / (1 - FADE_SHARE)).toFixed(4));
+  };
+
+  const schedule = () => {
+    if (!frame) frame = requestAnimationFrame(update);
+  };
+
+  new IntersectionObserver(([entry]) => {
+    active = entry.isIntersecting;
+    // Also runs on the way out, so a fast scroll past the hero still lands on 0 or 1.
+    schedule();
+  }).observe(section);
+
+  window.addEventListener('scroll', () => active && schedule(), { passive: true });
+  window.addEventListener('resize', schedule);
+  mobileQuery.addEventListener('change', schedule);
+  reducedMotion.addEventListener('change', schedule);
+  schedule();
+}
+
+/** Spreads the letters evenly so the phrase runs the whole arch path, end to end. */
+function fitWordmark(section: HTMLElement) {
+  const path = section.querySelector<SVGPathElement>('.hero-wordmark__path');
+  const measure = section.querySelector<SVGTextElement>('.hero-wordmark__measure');
+  const text = section.querySelector<SVGTextElement>('.hero-wordmark__text');
+  const textPath = text?.querySelector('textPath');
+  if (!path || !measure || !text || !textPath) return;
+
+  const fit = () => {
+    const natural = measure.getComputedTextLength();
+    if (!natural) return;
+    const chars = [...WORDMARK_TEXT].length;
+    const spacing = Math.max(0, (path.getTotalLength() - natural) / chars);
+    text.style.letterSpacing = `${spacing}px`;
+    // letter-spacing also follows the last letter. Half of it at the start keeps the phrase centred.
+    textPath.setAttribute('startOffset', `${spacing / 2}`);
+  };
+
+  fit();
+  document.fonts?.ready.then(fit);
 }
 
 /** Mobile only: the arch photo loops, and a thin bar fills until the next picture. */

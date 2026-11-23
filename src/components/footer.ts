@@ -16,14 +16,13 @@ export function createFooter(): HTMLElement {
       </div>
       <p class="site-footer__copy">© ${new Date().getFullYear()} Café du Conservatoire</p>
     </div>
-    <svg class="site-footer__wave" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true">
-      <path d="M0 0H1440V36C1320 12 1200 12 1080 36S840 60 720 36 480 12 360 36 120 60 0 36Z" />
-    </svg>
     <div class="site-footer__social">
-      <p class="site-footer__label">Suivez-nous</p>
+      <div class="site-footer__arch">
+        <p class="site-footer__label">Suivez-nous</p>
+      </div>
     </div>
   `;
 
-  footer.querySelector('.site-footer__social')!.append(createSocialLinks());
+  footer.querySelector('.site-footer__arch')!.append(createSocialLinks());
   return footer;
 }

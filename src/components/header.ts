@@ -1,10 +1,11 @@
 import './header.css';
 import { capAccent } from '../style/cap-accent';
 
+// Full paths, so the links also work from the menu page.
 const links = [
-  { label: 'Accueil', href: '#' },
-  { label: 'Menu', href: '#menu' },
-  { label: 'À propos', href: '#about' },
+  { label: 'Accueil', href: '/' },
+  { label: 'Menu', href: '/menu.html' },
+  { label: 'À propos', href: '/#about' },
   { label: 'Contact', href: '#contact' },
 ];
 
@@ -40,6 +41,8 @@ export function createHeader(): HTMLElement {
     </button>
 
     <dialog id="bubble-menu" class="bubble-menu" aria-label="Menu">
+      <img class="bubble-menu__shape bubble-menu__shape--circle" src="/shapes/Shape3.png" alt="" aria-hidden="true" width="1000" height="1000" />
+      <img class="bubble-menu__shape bubble-menu__shape--arch" src="/shapes/Shape6.png" alt="" aria-hidden="true" width="1000" height="1000" />
       <span class="bubble-menu__sphere" aria-hidden="true">
         <img class="bubble-menu__mark" src="/logo-og.png" alt="" />
       </span>
@@ -80,7 +83,8 @@ export function createHeader(): HTMLElement {
 
     menu.style.setProperty('--bubble-x', `${x}px`);
     menu.style.setProperty('--bubble-y', `${y}px`);
-    menu.style.setProperty('--bubble-r', `${rect.width / 2}px`);
+    // Layout width, not the on-screen one: the bubble may still be scaling in, or zoomed on hover.
+    menu.style.setProperty('--bubble-r', `${bubble.offsetWidth / 2}px`);
 
     if (mobileQuery.matches) {
       const root = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;

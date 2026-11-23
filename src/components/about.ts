@@ -17,8 +17,11 @@ export function createAbout(): HTMLElement {
   section.className = 'about';
   section.setAttribute('aria-labelledby', 'about-title');
   section.innerHTML = `
+    <img class="about__shape about__shape--circle" src="/shapes/Shape3.png" alt="" aria-hidden="true" width="1000" height="1000" loading="lazy" />
+    <img class="about__shape about__shape--cream" src="/shapes/Shape5.png" alt="" aria-hidden="true" width="1000" height="1000" loading="lazy" />
     <div class="about__inner">
       <div class="about__copy">
+        <img class="about__shape about__shape--oval" src="/shapes/Shape2.png" alt="" aria-hidden="true" width="1000" height="1000" loading="lazy" />
         <h2 id="about-title" class="about__title">${capAccent('À propos de nous')}</h2>
         <p class="about__subtitle">Un café au cœur du Conservatoire de Musique de Genève</p>
         <p class="about__text">
@@ -42,6 +45,15 @@ export function createAbout(): HTMLElement {
           aria-label="Agrandir la photo"
         >${arrowIcon}</button>
       </figure>
+    </div>
+    <div class="about__cta">
+      <a class="about__cta-link" href="/menu.html">
+        Voir le menu
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14" />
+          <path d="m13 6 6 6-6 6" />
+        </svg>
+      </a>
     </div>
   `;
 

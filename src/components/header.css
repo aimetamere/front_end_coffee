@@ -14,6 +14,21 @@
   background: var(--bg-color);
 }
 
+/* Desktop: no bar and no name in the corner. The hero's wordmark and Shape3 take their place;
+   only the fixed red menu bubble stays. Height 0 so nothing covers the composition. */
+@media (min-width: 769px) {
+  .site-header {
+    height: 0;
+    padding: 0;
+    background: transparent;
+  }
+
+  .site-header__logo,
+  .site-header__sphere {
+    display: none;
+  }
+}
+
 /* Blue circle cut off by the top-left corner */
 .site-header__lip {
   display: none;
@@ -335,6 +350,112 @@
   border-color: currentColor;
 }
 
+/* Corner shapes are desktop only. */
+.bubble-menu__shape {
+  display: none;
+}
+
+/* Desktop open menu: links centred on the left, small wordmark at the top, the blue circle
+   (Shape3) in the bottom-left corner and the cream arch (Shape6) on the right with the
+   address on it. Both PNGs are 1000 × 1000 canvases with the shape centred. */
+@media (min-width: 769px) {
+  .bubble-menu__sphere {
+    display: none;
+  }
+
+  .bubble-menu__shape {
+    position: absolute;
+    z-index: 0;
+    display: block;
+    height: auto;
+    max-width: none;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Circle is 36% of its canvas. Centre just inside the bottom-left corner. */
+  .bubble-menu__shape--circle {
+    top: 95%;
+    left: 5svh;
+    width: 126svh;
+    translate: -50% -50%;
+  }
+
+  /* Shape6 and the address share one size, --arch-s (the PNG canvas), so the text always sits
+     inside the cream with the same margin on every screen. The arch fills x 25.7–74.3% and
+     y 5.1–94.9% of its canvas. 4% of the canvas runs past the right edge and 10% past the
+     bottom, so the visible cream is 44.6% of --arch-s wide. */
+  .bubble-menu {
+    /* Smallest size still fits the email line (15.35em of the mono at 0.8125rem) with margins. */
+    --arch-s: clamp(38rem, 80svh, 46rem);
+    --arch-visible-w: calc(var(--arch-s) * 0.446);
+    --arch-pad: calc(var(--arch-s) * 0.05);
+  }
+
+  .bubble-menu__shape--arch {
+    right: calc(var(--arch-s) * -0.297);
+    bottom: calc(var(--arch-s) * -0.151);
+    width: var(--arch-s);
+  }
+
+  .bubble-menu[open] .bubble-menu__shape {
+    animation: sphere-in 1s var(--bubble-ease) 0.2s both;
+  }
+
+  /* Small arched wordmark at the top centre. Its lettering sits at 42% of the image width. */
+  .bubble-menu__wordmark {
+    top: calc(1.75rem + var(--safe-top));
+    right: auto;
+    left: 50%;
+    width: 9rem;
+    height: auto;
+    translate: -42% 0;
+  }
+
+  .bubble-menu__content {
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100%;
+    padding: calc(6rem + var(--safe-top)) 0 calc(6rem + var(--safe-bottom))
+      calc(6rem + var(--safe-left));
+  }
+
+  .bubble-menu__links a::after {
+    content: none;
+  }
+
+  /* Address in the lower part of Shape6, where its sides are straight: same margin left,
+     right and below. */
+  .bubble-menu__info {
+    position: absolute;
+    right: var(--arch-pad);
+    bottom: calc(var(--arch-pad) + var(--safe-bottom));
+    width: calc(var(--arch-visible-w) - var(--arch-pad) * 2);
+    align-self: auto;
+    color: var(--bordeaux-profond);
+    font-size: 0.8125rem;
+    line-height: 1.75;
+  }
+
+  .bubble-menu__label {
+    margin-bottom: 0.75rem !important;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgb(122 0 0 / 0.25);
+    font-size: 0.875rem;
+    text-transform: lowercase;
+    opacity: 1;
+  }
+
+  .bubble-menu__info a {
+    border-bottom-color: rgb(122 0 0 / 0.3);
+  }
+
+  .bubble-menu__info a:hover,
+  .bubble-menu__info a:focus-visible {
+    border-color: currentColor;
+  }
+}
+
 /* Staggered reveal of the menu content */
 .bubble-menu[open] .bubble-menu__links li,
 .bubble-menu[open] .bubble-menu__info {
@@ -379,6 +500,7 @@
   .bubble-menu[open],
   .bubble-menu.is-closing,
   .bubble-menu[open] .bubble-menu__sphere,
+  .bubble-menu[open] .bubble-menu__shape,
   .bubble-menu[open] .bubble-menu__wordmark,
   .bubble-menu[open] .bubble-menu__links li,
   .bubble-menu[open] .bubble-menu__info {
