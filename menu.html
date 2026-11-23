@@ -3,6 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- Safari's bottom strip: white while browsing, like the page at both ends. The menu
+         and the gallery viewer change it while they are open (theme-color.ts). -->
+    <meta name="theme-color" content="#ffffff" />
+    <!-- Painted before the stylesheets load, so the first frame is already the page's
+         white (style.css repeats this). -->
+    <style>
+      html { background: #fff; }
+      #app { min-height: 100vh; min-height: 100dvh; background: #fff; }
+      @media (max-width: 768px) { body { background: transparent; } }
+    </style>
     <title>Menu · Café du Conservatoire</title>
     <meta name="description" content="Le menu du Café du Conservatoire, à consulter ou à télécharger." />
     <link rel="manifest" href="/manifest.webmanifest" />

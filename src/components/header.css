@@ -1,7 +1,6 @@
-/* No bar on any screen: height 0, so nothing covers the composition, and only the fixed
-   red menu bubble shows. On phones the arched logo also floats at the top centre, on a
-   transparent background. It stays out of the hero, whose wordmark is the name: header.ts
-   hides it (.is-over-hero) while the hero is under it. */
+/* Desktop: no bar, height 0, so nothing covers the composition and only the fixed red
+   menu bubble shows. Phones have their own header at the end of this file: a white bar
+   with the name in a blue pill and the menu in a red tab. */
 .site-header {
   --bubble-ease: cubic-bezier(0.76, 0, 0.24, 1);
 
@@ -10,57 +9,10 @@
   height: 0;
 }
 
-.site-header__mark {
+.site-header__lip,
+.site-header__logo,
+.bubble-menu__sphere {
   display: none;
-}
-
-@media (max-width: 768px) {
-  /* Blue capsule on the left, the mirror of the menu bubble: same top, same height, same
-     inset from its edge. logo-og.png is mostly transparent; its cream letters fill
-     x 119–923 and y 139–806 of the 1094 × 962 image (804 × 667, 1.205 : 1). The image is
-     scaled so the letters are the pill's height less a little padding, and shifted so
-     they sit in the middle; the pill clips the transparent rest. */
-  .site-header__mark {
-    --mark-pad-y: calc(var(--bubble-size) * 0.1);
-    --mark-pad-x: calc(var(--bubble-size) * 0.3);
-    --mark-letters-h: calc(var(--bubble-size) - var(--mark-pad-y) * 2);
-
-    position: fixed;
-    z-index: 50;
-    top: calc(var(--safe-top) + var(--bubble-top));
-    left: calc(var(--safe-left) + var(--bubble-right));
-    display: block;
-    width: calc(var(--mark-letters-h) * 1.205 + var(--mark-pad-x) * 2);
-    height: var(--bubble-size);
-    overflow: hidden;
-    border-radius: 999px;
-    background: var(--bleu-noble);
-    box-shadow: 0 6px 18px rgb(3 74 173 / 0.25);
-    -webkit-tap-highlight-color: transparent;
-    transition:
-      opacity 0.35s ease,
-      visibility 0.35s;
-  }
-
-  .site-header__mark img {
-    position: absolute;
-    top: calc(var(--mark-pad-y) - var(--mark-letters-h) * 139 / 667);
-    left: calc(var(--mark-pad-x) - var(--mark-letters-h) * 119 / 667);
-    display: block;
-    width: auto;
-    max-width: none;
-    height: calc(var(--mark-letters-h) * 962 / 667);
-  }
-
-  .site-header__mark:focus-visible {
-    outline: 2px solid var(--bleu-noble);
-    outline-offset: 3px;
-  }
-
-  .site-header.is-over-hero .site-header__mark {
-    opacity: 0;
-    visibility: hidden;
-  }
 }
 
 /* Red menu bubble, fixed so the menu is always one tap away. Its size and spot are shared
@@ -207,7 +159,9 @@
 .bubble-menu::backdrop {
   position: fixed;
   inset: 0;
+  top: 0;
   height: 100lvh;
+  min-height: 100lvh;
   background: transparent;
 }
 
@@ -317,21 +271,6 @@ html.is-menu-open {
     calc(var(--menu-pad) + var(--safe-left));
 }
 
-/* Narrow screens: the arch takes the lower right, so the links start under the wordmark. */
-@media (max-width: 768px) {
-  .bubble-menu__content {
-    justify-content: flex-start;
-    padding-top: calc(clamp(7.5rem, 30vw, 9.5rem) + var(--safe-top));
-  }
-}
-
-/* The smallest phones: slightly smaller links, so the last one stays clear of the arch. */
-@media (max-width: 340px) {
-  .bubble-menu__links a {
-    font-size: 1.9rem;
-  }
-}
-
 .bubble-menu__links {
   display: flex;
   flex-direction: column;
@@ -342,7 +281,7 @@ html.is-menu-open {
 }
 
 .bubble-menu__links a {
-  display: inline-block;
+  display: inline-flex;
   font-family: var(--font-title);
   font-weight: 700;
   font-size: clamp(2.25rem, 6vw, 5rem);
@@ -360,17 +299,42 @@ html.is-menu-open {
   outline: none;
 }
 
+/* Arrow after each link; it slides a little on hover, focus and press. */
+.bubble-menu__links a {
+  align-items: center;
+  gap: 0.35em;
+}
+
+.bubble-menu__arrow {
+  flex: none;
+  width: 0.55em;
+  height: 0.55em;
+  opacity: 0.75;
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.3s;
+}
+
+.bubble-menu__links a:hover .bubble-menu__arrow,
+.bubble-menu__links a:focus-visible .bubble-menu__arrow,
+.bubble-menu__links a:active .bubble-menu__arrow {
+  opacity: 1;
+  transform: translateX(0.2em);
+}
+
 /* Address in the lower part of Shape6, where its sides are straight: same margin left,
-   right and below. The type follows the arch, so the email line always fits the cream
-   (15.35em of the mono, 34.6% of --arch-s). */
+   right and below. Laid out like the footer: the street and the city, then the phone and
+   the email as rows with a round icon, then the hours under one rule. The type follows
+   the arch, so the email row (icon, gap and 25 characters: 17.9em) always fits the cream
+   (34.6% of --arch-s); up to 0.95rem. */
 .bubble-menu__info {
   position: absolute;
   right: var(--arch-pad);
   bottom: calc(var(--arch-pad) + var(--safe-bottom));
   width: calc(var(--arch-visible-w) - var(--arch-pad) * 2);
   color: var(--bordeaux-profond);
-  font-size: min(0.8125rem, var(--arch-s) * 0.0214);
-  line-height: 1.75;
+  font-size: min(0.95rem, var(--arch-s) * 0.0192);
+  line-height: 1.6;
 }
 
 .bubble-menu__info p {
@@ -387,46 +351,66 @@ html.is-menu-open {
   text-transform: lowercase;
 }
 
-/* The longest hours line is 29 characters: at 0.88em it fits the width the email line
-   (25 characters) was sized for, so each line stays on one row. */
+/* One rule above the hours, stronger than a hairline. The longest line is 29 characters:
+   at 0.88em it fits the email row's width, so each line stays on one row. */
 .bubble-menu__hours {
-  margin-top: 0.75rem !important;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgb(122 0 0 / 0.25);
+  margin-top: 0.7rem !important;
+  padding-top: 0.7rem;
+  border-top: 1.5px solid rgb(122 0 0 / 0.55);
   font-size: 0.88em;
+  line-height: 1.5;
   white-space: nowrap;
 }
 
-.bubble-menu__info a {
-  color: inherit;
-  text-decoration: none;
-  border-bottom: 1px solid rgb(122 0 0 / 0.3);
-  transition: border-color 0.3s;
+/* Phone and email as rows: a bordeaux circle with a cream icon, then the text. No
+   underline at rest; the text underlines on hover and focus. */
+.bubble-menu__contact {
+  display: grid;
+  justify-items: start;
+  gap: 0.2rem;
+  margin-top: 0.5rem !important;
 }
 
-.bubble-menu__info a:hover,
-.bubble-menu__info a:focus-visible {
+.bubble-menu__info a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bubble-menu__info a svg {
+  flex: none;
+  box-sizing: content-box;
+  width: 1em;
+  height: 1em;
+  padding: 0.45em;
+  border-radius: 50%;
+  background: var(--bordeaux-profond);
+  color: var(--creme);
+  transition: transform 0.25s;
+}
+
+.bubble-menu__info a span {
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.25s;
+}
+
+.bubble-menu__info a:hover span,
+.bubble-menu__info a:focus-visible span {
   border-color: currentColor;
 }
 
-/* Phones: the menu stays full height, so its red fills behind Safari's toolbar, but the
-   arch, the address and hours on it, and the blue circle are placed from the visible
-   bottom (--toolbar-h in style.css), above the toolbar and the home indicator. After the
-   base rules, so these win. */
-@media (max-width: 768px) {
-  .bubble-menu__shape--arch {
-    bottom: calc(var(--arch-s) * -0.151 + var(--toolbar-h));
-  }
+.bubble-menu__info a:hover svg,
+.bubble-menu__info a:focus-visible svg {
+  transform: scale(1.08);
+}
 
-  .bubble-menu__info {
-    bottom: calc(var(--arch-pad) + var(--toolbar-h));
-  }
-
-  /* Circle (radius 18% of its canvas): its base rests on the toolbar's top edge, its
-     centre just inside the left edge, so its body is on screen and above the toolbar. */
-  .bubble-menu__shape--circle {
-    top: calc(100lvh - var(--toolbar-h) - min(126svh, 150vw) * 0.18);
-  }
+.bubble-menu__info a:focus-visible {
+  outline: none;
 }
 
 /* Staggered reveal of the menu content */
@@ -480,5 +464,309 @@ html.is-menu-open {
 
   .burger__bar {
     transition: none;
+  }
+}
+
+/* Phones: the header from before the fluid remake. A transparent bar sticks to the top with the
+   name in a blue pill on the left; on the right a red tab, drawn by the lip, holds the
+   menu button. The menu unfolds from that tab into a sheet: links on the left, the
+   address and hours on the right, the small arched logo at the top. */
+@media (max-width: 768px) {
+  .site-header {
+    --header-height: 4.5rem;
+
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    height: calc(var(--header-height) + var(--safe-top));
+    padding-top: calc(var(--safe-top) + 9px);
+    padding-right: calc(92px + 1rem + var(--safe-right));
+    /* No bar colour: the page shows around the pill as it scrolls under it. */
+    background: transparent;
+  }
+
+  /* Red strip under the status bar, so it reads as one with the tab. */
+  .site-header::before {
+    content: '';
+    position: fixed;
+    z-index: 40;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--safe-top) + 6px);
+    background: var(--bordeaux-profond);
+    pointer-events: none;
+  }
+
+  /* One shape: the thin band under the status bar, then a tab on the right for the menu.
+     The page's corner is rounded where it meets the tab. The path runs past the left,
+     top and right of the box so it always reaches the screen edges. */
+  .site-header__lip {
+    position: fixed;
+    z-index: 40;
+    top: var(--safe-top);
+    right: var(--safe-right);
+    display: block;
+    width: 120px;
+    height: 80px;
+    overflow: visible;
+    color: var(--bordeaux-profond);
+    fill: currentColor;
+    pointer-events: none;
+  }
+
+  /* Pill flush with the left edge, the name in cream inside it */
+  .site-header__logo {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    padding: 0.6rem 1.25rem 0.6rem calc(1rem + var(--safe-left));
+    border-radius: 0 999px 999px 0;
+    background: var(--bleu-noble);
+    color: var(--creme);
+    font-family: var(--font-title);
+    font-weight: 700;
+    font-size: clamp(1rem, 4.6vw, 1.3rem);
+    line-height: 1.05;
+    text-decoration: none;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Fills the red tab drawn by the lip */
+  .menu-bubble {
+    top: var(--safe-top);
+    right: var(--safe-right);
+    width: 92px;
+    height: 54px;
+    padding: 6px 0 0 4px;
+    border-radius: 0 0 0 20px;
+    background: transparent;
+    box-shadow: none;
+    animation: none;
+  }
+
+  .menu-bubble:hover,
+  .menu-bubble:focus-visible {
+    transform: none;
+    box-shadow: none;
+    outline: none;
+  }
+
+  /* Faster bars, so the cross is back to three bars before the sheet is gone */
+  .burger {
+    --bar-width: 2.25rem;
+    --bar-height: 1.5px;
+    --bar-gap: 7px;
+    --bar-inset: 0px;
+    --burger-speed: 0.22s;
+  }
+
+  .bubble-menu__close {
+    top: var(--safe-top);
+    right: var(--safe-right);
+    left: auto;
+    width: 92px;
+    height: 64px;
+    padding: 6px 0 0 4px;
+    border: 0;
+    border-radius: 0 0 0 20px;
+    outline: none;
+  }
+
+  /* The dialog focuses the cross when it opens. Safari would draw a ring around the tab. */
+  .bubble-menu__close:hover,
+  .bubble-menu__close:focus-visible {
+    background: transparent;
+    outline: none;
+    transform: none;
+  }
+
+  /* Unfolds from the red tab into a full-width sheet and folds back into it. Starting from
+     the tab's exact shape (instead of a circle) keeps the edges from bulging past it. */
+  .bubble-menu {
+    --menu-duration: 0.6s;
+    --sheet-ease: cubic-bezier(0.32, 0.72, 0, 1);
+    --tab-clip: inset(
+      0 0 calc(100% - var(--safe-top) - 64px) calc(100% - 92px - var(--safe-right)) round 0 0 0
+        20px
+    );
+
+    height: auto;
+    /* Visible screen with the toolbar showing, less a strip of page below the sheet. */
+    max-height: calc(100svh - 2rem);
+    overflow: auto;
+    border-radius: 0 0 2.5rem 2.5rem;
+    /* Soft shadow under the rounded edge, so the sheet lifts off the dimmed page. The clip
+       reaches 5rem below the sheet to let the shadow show; the rounded corners come from
+       the border radius. */
+    box-shadow: 0 1.5rem 3rem rgb(0 0 0 / 0.45);
+    clip-path: inset(0 0 -5rem 0 round 0 0 2.5rem 2.5rem);
+  }
+
+  /* Dark scrim over the whole page behind the sheet, Safari's toolbar area included, so
+     the page under the sheet (the footer too) reads as page, not as more menu. */
+  .bubble-menu::backdrop {
+    background: rgb(0 0 0 / 0.55);
+    animation: scrim-in var(--menu-duration) var(--sheet-ease);
+  }
+
+  .bubble-menu.is-closing::backdrop {
+    opacity: 0;
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes scrim-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  .bubble-menu[open] {
+    animation: sheet-open var(--menu-duration) var(--sheet-ease);
+  }
+
+  .bubble-menu.is-closing {
+    animation: sheet-close 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .bubble-menu.is-closing .bubble-menu__content,
+  .bubble-menu.is-closing .bubble-menu__sphere {
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .bubble-menu[open] .bubble-menu__sphere,
+  .bubble-menu[open] .bubble-menu__links li,
+  .bubble-menu[open] .bubble-menu__info {
+    animation: sheet-item-in 0.5s var(--sheet-ease) both;
+    animation-delay: calc(0.12s + var(--i, 0) * 0.04s);
+  }
+
+  /* The sheet has no room for the PDF shapes or the large wordmark. */
+  .bubble-menu__shape,
+  .bubble-menu__wordmark {
+    display: none;
+  }
+
+  /* Small arched logo centred at the top. The image has empty margins around the
+     lettering, and the lettering sits slightly left of the image's centre. */
+  .bubble-menu__sphere {
+    position: absolute;
+    top: calc(var(--safe-top) - 0.25rem);
+    left: calc(50% - 3.25rem);
+    display: block;
+    width: 6.8rem;
+    aspect-ratio: 1094 / 962;
+    pointer-events: none;
+  }
+
+  .bubble-menu__mark {
+    position: absolute;
+    top: 0;
+    left: 10%;
+    display: block;
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+  }
+
+  /* One column on one left edge: the links, then the address and hours under them. */
+  .bubble-menu__content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 1.5rem;
+    min-height: 0;
+    padding: calc(5rem + var(--safe-top)) calc(1.5rem + var(--safe-right)) 2rem
+      calc(2rem + var(--safe-left));
+  }
+
+  .bubble-menu__links {
+    gap: 0;
+  }
+
+  /* Each link is a full-height tap target */
+  .bubble-menu__links a {
+    display: flex;
+    padding-block: 0.55rem;
+    font-size: clamp(1.45rem, 7vw, 1.85rem);
+  }
+
+  /* Address and hours under the links, cream on the red, at a readable size */
+  .bubble-menu__info {
+    position: static;
+    width: auto;
+    max-width: 100%;
+    margin: 0;
+    color: var(--creme);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  .bubble-menu__label {
+    margin-bottom: 0.4rem !important;
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  /* Phone and email the footer's way on the red: cream circle, bordeaux icon, cream text,
+     each row a full tap target. */
+  .bubble-menu__info a {
+    min-height: 2.5rem;
+  }
+
+  .bubble-menu__info a svg {
+    background: var(--creme);
+    color: var(--bordeaux-profond);
+  }
+
+  .bubble-menu__info a:active span {
+    border-color: currentColor;
+  }
+
+  .bubble-menu__hours {
+    margin-top: 0.75rem !important;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgb(213 176 135 / 0.3);
+    font-size: 1em;
+    white-space: normal;
+  }
+
+  @keyframes sheet-open {
+    from {
+      clip-path: var(--tab-clip);
+    }
+  }
+
+  @keyframes sheet-close {
+    to {
+      clip-path: var(--tab-clip);
+    }
+  }
+
+  @keyframes sheet-item-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bubble-menu[open],
+    .bubble-menu.is-closing,
+    .bubble-menu::backdrop,
+    .bubble-menu[open] .bubble-menu__sphere,
+    .bubble-menu[open] .bubble-menu__links li,
+    .bubble-menu[open] .bubble-menu__info {
+      animation: none;
+    }
   }
 }

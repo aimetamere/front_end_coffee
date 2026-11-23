@@ -24,34 +24,72 @@
   background: var(--bg-color);
 }
 
-/* Arch: half-circle top, straight sides, flat base. The oversized radius resolves to half the width. */
+/* The photo layer covers the whole pinned frame and never changes size. The arch (half-
+   circle top, straight sides, flat base) is a clip on the window inside it; the hairline
+   is drawn just outside that box. --box-* below give the arch's box for the current
+   --grow, so the arch, the hairline and the image all follow one set of numbers. */
 .hero-stack__photo {
-  position: relative;
-  width: min(86cqw, calc(92cqh * 4 / 5));
-  aspect-ratio: 4 / 5;
-  border-radius: 999px 999px 0 0;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   animation: arch-rise 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-stack__window {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  clip-path: inset(
+    calc(100% - var(--box-b) - var(--box-h)) calc((100% - var(--box-w)) / 2) var(--box-b)
+      round var(--arch-r) var(--arch-r) 0 0
+  );
 }
 
 /* Hairline arch drawn just outside the photo */
 .hero-stack__photo::before {
   content: '';
   position: absolute;
-  inset: calc(var(--arch-gap) * -1) calc(var(--arch-gap) * -1) 0;
+  left: calc((100% - var(--box-w)) / 2 - var(--arch-gap));
+  bottom: var(--box-b);
+  width: calc(var(--box-w) + var(--arch-gap) * 2);
+  height: calc(var(--box-h) + var(--arch-gap));
   border: 1px solid var(--creme);
   border-bottom: 0;
-  border-radius: 999px 999px 0 0;
+  border-radius: calc(var(--arch-r) + var(--arch-gap)) calc(var(--arch-r) + var(--arch-gap)) 0 0;
+  opacity: calc(1 - var(--grow));
   pointer-events: none;
 }
 
+/* The image: drawn once at the size that covers the full frame (--img-w, from hero.ts),
+   then scaled (--img-k) to cover the arch's box, its bottom centre on the box's bottom
+   centre, like object-fit: cover with object-position: center bottom. Transform only. */
 .hero-stack__base {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 999px 999px 0 0;
-  object-fit: cover;
-  object-position: center bottom;
+  bottom: 0;
+  left: 50%;
+  display: block;
+  width: var(--img-w, 100%);
+  height: auto;
+  max-width: none;
+  transform-origin: 50% 100%;
+  transform: translate(-50%, calc(var(--box-b) * -1)) scale(var(--img-k, 1));
+  will-change: transform;
+}
+
+/* Hidden for the first frame, until hero.ts has measured the frame. */
+.hero-stack:not(.is-measured) .hero-stack__base {
+  visibility: hidden;
+}
+
+/* Arch width and lift as lengths, read once by hero.ts. */
+.hero-stack__probe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--arch-w);
+  height: var(--arch-lift);
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* First screen on every width: the arch photo, the name wrapped around it, three cropped
@@ -90,21 +128,10 @@
 /* The resting arch grows into the full pinned frame; the top flattens as it widens. */
 .hero-stack__photo {
   --arch-r: calc(var(--arch-w) / 2 * (1 - var(--grow)));
+  --box-w: calc(var(--arch-w) + (100cqw - var(--arch-w)) * var(--grow));
+  --box-h: calc(var(--arch-h) + (var(--stage-h) - var(--arch-h)) * var(--grow));
+  --box-b: calc(var(--arch-lift) * (1 - var(--grow)));
   z-index: 1;
-  width: calc(var(--arch-w) + (100cqw - var(--arch-w)) * var(--grow));
-  height: calc(var(--arch-h) + (var(--stage-h) - var(--arch-h)) * var(--grow));
-  margin-bottom: calc(var(--arch-lift) * (1 - var(--grow)));
-  aspect-ratio: auto;
-  border-radius: var(--arch-r) var(--arch-r) 0 0;
-}
-
-.hero-stack__photo::before {
-  border-radius: calc(var(--arch-r) + var(--arch-gap)) calc(var(--arch-r) + var(--arch-gap)) 0 0;
-  opacity: calc(1 - var(--grow));
-}
-
-.hero-stack__base {
-  border-radius: inherit;
 }
 
 .hero-shape {
@@ -158,6 +185,11 @@
   width: calc(var(--pdf) * 540);
 }
 
+/* The cream oval only stands in for the cream arch on phones. */
+.hero-shape--cream {
+  display: none;
+}
+
 /* Bordeaux circle (Shape8: r 90 pt on a 280 pt canvas), centred 30 pt in from the right
    edge and 37 pt above the bottom, over the arch's foot. Drawn after the arch. Kept clear
    of the lettering the same way. */
@@ -176,12 +208,13 @@
 .hero-wordmark {
   position: absolute;
   z-index: 2;
-  bottom: calc(var(--arch-lift) * (1 - var(--grow)));
+  bottom: var(--arch-lift);
   left: 50%;
   display: block;
   /* viewBox is 160 × 155 units, the photo 100 units wide */
   width: calc(var(--arch-w) * 1.6);
-  translate: -50% 0;
+  /* Follows the arch's base down as it grows (a transform, no layout). */
+  translate: -50% calc(var(--arch-lift) * var(--grow));
   color: var(--creme);
   text-decoration: none;
   /* Only the letters take clicks, not the box around the photo. */
@@ -251,45 +284,72 @@
    PDF scale, each one mostly on screen: cropped by an edge like on the menu PDF, but
    recognizable, and never behind the letters. */
 @media (max-width: 768px) {
+  /* The pinned frame starts under the sticky header bar, so the growing photo never
+     slides under the pill or the tab. */
+  .hero-stack__sticky {
+    top: calc(4.5rem + var(--safe-top));
+  }
+
   .hero-stack {
+    --stage-h: calc(100svh - 4.5rem - var(--safe-top));
     --arch-w: min(66svh, 58vw);
     /* Height left over around the arch and its letters, a bit more of it below. */
     --hero-free: calc(var(--stage-h) - var(--arch-w) * 1.45);
     --arch-lift: max(1rem, var(--hero-free) * 0.52);
   }
 
-  /* Smaller than on desktop: the screen width over 680 pt, or less where the bands around
-     the letters are short (a tall tablet, a short phone). */
-  .hero-shape {
-    --pdf: min(100vw / 680, var(--hero-free) * 0.0018);
+  /* Shapes whole on phones: each PNG is scaled so its opaque body fits the band above or
+     below the lettering with a margin all round, and placed in a corner of that band.
+     Nothing crosses the screen edge, the letters or the photo. Opaque parts of each
+     1000 × 1000 canvas: Shape7 50% × 81%, Shape9 38% × 81%, Shape10 31% × 91%.
+     The top/left of each shape is its canvas centre (translate -50% -50%). */
+  .hero-stack {
+    --band-top: calc(var(--hero-free) - var(--arch-lift));
+    --band-bottom: var(--arch-lift);
+    --shape-m: 0.75rem;
   }
 
-  /* Bordeaux oval (182 × 296 pt): its body in the top-left corner, under the status bar,
-     a quarter of it past the left edge. */
+  /* Bordeaux oval (Shape7) in the top-left corner, above the letters. */
   .hero-shape--left {
-    top: calc(var(--safe-top) * 0.5 + var(--pdf) * 140);
-    left: calc(var(--pdf) * 52);
+    --c: max(0px, min((var(--band-top) - var(--shape-m) * 2) / 0.806 * 0.9, 56vw));
+
+    top: calc(var(--shape-m) + var(--c) * 0.403);
+    left: calc(var(--shape-m) + var(--c) * 0.249);
+    width: var(--c);
   }
 
-  /* Tilted blue oval (about 175 × 325 pt): its top 1rem under the letters' base, a
-     quarter past the left edge, the rest cropped by the bottom like on the PDF. */
+  /* Tilted blue oval (Shape9) in the bottom-left corner, under the letters' base. */
   .hero-shape--blue {
-    top: calc(100% - var(--arch-lift) + 1rem + var(--pdf) * 163);
-    left: calc(var(--pdf) * 40);
+    --c: max(0px, min((var(--band-bottom) - var(--shape-m) * 2) / 0.814, 78vw));
+
+    top: calc(100% - var(--shape-m) - var(--c) * 0.407);
+    left: calc(var(--shape-m) + var(--c) * 0.192);
+    width: var(--c);
   }
 
-  /* Cream arch (162 pt wide): its round top 1rem under the letters' base, two thirds of
-     its width on screen. */
+  /* Bottom-right: the cream oval (Shape5) instead of the cream arch, in step with the two
+     other ovals. Whole, sized and placed from its opaque box (x 31.8–68.2%, y 12.6–87.5%
+     of the canvas): right edge and base 0.75rem in from the screen edge and the bottom of
+     the visible hero, the base also clear of the home indicator. A short band shrinks it. */
   .hero-shape--arch {
-    top: calc(100% - var(--arch-lift) + 1rem + var(--pdf) * 243);
-    left: calc(100% - var(--pdf) * 30);
+    display: none;
   }
 
-  /* Bordeaux circle (r 90 pt) low in the bottom-right corner, over the arch's foot, so the
-     arch's round top and upper body stay in view above it. */
+  .hero-shape--cream {
+    --c: max(
+      0px,
+      min((var(--band-bottom) - var(--shape-m) * 2 - var(--safe-bottom)) / 0.749, 82vw)
+    );
+
+    display: block;
+    top: calc(100% - var(--shape-m) - var(--safe-bottom) - var(--c) * 0.375);
+    left: calc(100% - var(--shape-m) - var(--c) * 0.182);
+    width: var(--c);
+  }
+
+  /* No bordeaux circle over the arch's foot on phones. */
   .hero-shape--dot {
-    top: calc(100% - var(--pdf) * 22);
-    left: calc(100% - var(--pdf) * 60);
+    display: none;
   }
 }
 

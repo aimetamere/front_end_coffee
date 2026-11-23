@@ -41,13 +41,6 @@ export function createAbout(): HTMLElement {
           <path d="m13 6 6 6-6 6" />
         </svg>
       </a>
-      <a class="about__cta-link about__cta-link--outline" href="/menu.html#contact">
-        Contactez-nous
-        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M5 12h14" />
-          <path d="m13 6 6 6-6 6" />
-        </svg>
-      </a>
     </div>
   `;
 

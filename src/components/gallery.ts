@@ -1,4 +1,5 @@
 import './gallery.css';
+import { tintBrowserBar } from './theme-color';
 
 /** Web-sized photos only; the full-size originals in public/photo/ start with "_". */
 const photos = [
@@ -45,6 +46,16 @@ export function createGallery(): HTMLElement {
         )
         .join('')}
     </ul>
+    <!-- Phones only: the way to the contact form, under the photos. -->
+    <div class="gallery__cta">
+      <a class="about__cta-link about__cta-link--outline" href="/menu.html#contact">
+        Contactez-nous
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14" />
+          <path d="m13 6 6 6-6 6" />
+        </svg>
+      </a>
+    </div>
     </div>
 
     <dialog class="gallery-lightbox" aria-label="Photo agrandie">
@@ -119,9 +130,13 @@ export function createGallery(): HTMLElement {
     if (pinned) window.scrollTo(0, lockedScroll);
   };
 
+  // Safari's bottom strip takes the scrim's dark grey while the viewer is open.
+  let restoreBar: (() => void) | null = null;
+
   const open = (index: number) => {
     if (lightbox.open) return;
     lockPage();
+    restoreBar = tintBrowserBar('#3a3a3a');
     lightbox.showModal();
     show(index);
   };
@@ -130,7 +145,11 @@ export function createGallery(): HTMLElement {
     if (lightbox.open) lightbox.close();
   };
 
-  lightbox.addEventListener('close', unlockPage);
+  lightbox.addEventListener('close', () => {
+    unlockPage();
+    restoreBar?.();
+    restoreBar = null;
+  });
 
   section.querySelector('.gallery__grid')!.addEventListener('click', (event) => {
     const tile = (event.target as HTMLElement).closest<HTMLButtonElement>('.gallery__tile');

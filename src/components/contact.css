@@ -442,3 +442,10 @@
     animation: none;
   }
 }
+
+/* Phones: lands under the sticky header bar. */
+@media (max-width: 768px) {
+  .contact {
+    scroll-margin-top: calc(var(--safe-top) + 4.5rem);
+  }
+}

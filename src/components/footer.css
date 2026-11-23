@@ -1,143 +1,236 @@
+/* Red footer, cream type. Desktop: name, tagline and links on the left; address, phone,
+   email and hours on the right; the copyright along the bottom. Phones: one column in that
+   order. The red ends in a wave over a white band with "Suivez-nous" and Instagram, which
+   runs on under Safari's toolbar: the page ends white, like it starts. */
 .site-footer {
-  background: transparent;
+  --footer-pad: clamp(1.25rem, 4vw, 3rem);
+  --footer-rule: rgb(213 176 135 / 0.3);
+
+  background: var(--bg-color);
+  color: var(--creme);
 }
 
 .site-footer p {
-  margin: 0 0 0.25rem;
+  margin: 0;
 }
 
-.site-footer__main {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 1rem 1.5rem;
-  padding: clamp(1.5rem, 4vw, 2rem) calc(clamp(1.25rem, 3vw, 2rem) + var(--safe-right)) 1rem
-    calc(clamp(1.25rem, 3vw, 2rem) + var(--safe-left));
+.site-footer__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2.5rem 3rem;
+  padding: clamp(2.5rem, 5vw, 3.5rem) max(var(--footer-pad) + var(--safe-right), 50% - 39rem)
+    1.5rem max(var(--footer-pad) + var(--safe-left), 50% - 39rem);
   background: var(--bordeaux-profond);
-  color: var(--creme);
+}
+
+/* Left group */
+.site-footer__start {
+  display: grid;
+  align-content: start;
+  gap: 1.5rem;
+}
+
+.site-footer__brand {
+  display: grid;
+  gap: 0.35rem;
 }
 
 .site-footer__name {
   font-family: var(--font-title);
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 1.5rem;
+  line-height: 1.15;
 }
 
+/* Short cream rule under the tagline */
 .site-footer__tagline {
   font-family: var(--font-subtitle);
   font-style: italic;
 }
 
-/* Left: the name, then the site links. Right: address, phone, email and opening hours. */
-.site-footer__start {
-  display: grid;
-  gap: 1.25rem;
+.site-footer__tagline::after {
+  content: '';
+  display: block;
+  width: 3rem;
+  height: 1px;
+  margin-top: 1.25rem;
+  background: var(--creme);
 }
 
+/* Site links as outlined cream pills: plainly buttons, with a full-size tap target.
+   They fill cream on hover, focus and press. */
 .site-footer__nav ul {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem 1.5rem;
+  gap: 0.6rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .site-footer__nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.35rem 1.1rem;
+  border: 1px solid rgb(213 176 135 / 0.6);
+  border-radius: 999px;
   color: var(--creme);
   font-family: var(--font-title);
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.3s;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 0.25s,
+    color 0.25s,
+    border-color 0.25s;
 }
 
 .site-footer__nav a:hover,
-.site-footer__nav a:focus-visible {
-  border-color: currentColor;
+.site-footer__nav a:focus-visible,
+.site-footer__nav a:active {
+  border-color: var(--creme);
+  background: var(--creme);
+  color: var(--bordeaux-profond);
   outline: none;
 }
 
+/* Right group: address, phone and email, then the hours under a light rule */
 .site-footer__info {
   display: grid;
-  gap: 0.75rem;
+  align-content: start;
+  gap: 1rem;
   font-family: var(--font-body);
   font-size: 0.95rem;
   line-height: 1.6;
 }
 
-.site-footer__info p {
-  margin: 0;
+/* Phone and email: an icon in a small cream circle marks each as a link, with a full-size
+   tap target. No underline at rest, so the only line before the hours is their rule. */
+.site-footer__contact {
+  display: grid;
+  justify-items: start;
+  gap: 0.25rem;
 }
 
 .site-footer__info a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 2.75rem;
   color: inherit;
+  font-weight: 600;
   text-decoration: none;
-  border-bottom: 1px solid rgb(213 176 135 / 0.4);
   overflow-wrap: anywhere;
-  transition: border-color 0.3s;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.site-footer__info a:hover,
-.site-footer__info a:focus-visible {
+.site-footer__info a svg {
+  flex: none;
+  box-sizing: content-box;
+  width: 1rem;
+  height: 1rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  background: var(--creme);
+  color: var(--bordeaux-profond);
+  transition: transform 0.25s;
+}
+
+.site-footer__info a span {
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.25s;
+}
+
+.site-footer__info a:hover span,
+.site-footer__info a:focus-visible span,
+.site-footer__info a:active span {
   border-color: currentColor;
-  outline: none;
 }
 
+.site-footer__info a:hover svg,
+.site-footer__info a:focus-visible svg {
+  transform: scale(1.08);
+}
+
+.site-footer__info a:focus-visible {
+  outline: 2px solid var(--creme);
+  outline-offset: 3px;
+  border-radius: 999px;
+}
+
+/* Hours as in the open menu: three plain lines under one light rule. */
 .site-footer__hours {
+  margin-top: 0.25rem;
   padding-top: 0.75rem;
-  border-top: 1px solid rgb(213 176 135 / 0.3);
+  border-top: 1px solid var(--footer-rule);
+  line-height: 1.5;
+}
+
+/* Bottom row: the copyright, then the legal links, smaller than the site links. */
+.site-footer__legal {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--footer-rule);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
 }
 
 .site-footer__copy {
-  flex-basis: 100%;
-  font-size: 0.85rem;
-  opacity: 0.8;
+  opacity: 0.7;
 }
 
-/* Red strip under the band with one white arch cut into it, standing on the page's bottom
-   edge: the same shape as the hero arch (half-circle top, straight sides, flat base, 4/5)
-   with the same cream hairline. */
+.site-footer__legal ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-footer__legal a {
+  display: inline-block;
+  padding-block: 0.35rem;
+  color: var(--creme);
+  text-decoration: underline;
+  text-decoration-color: rgb(213 176 135 / 0.4);
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color 0.25s;
+}
+
+.site-footer__legal a:hover,
+.site-footer__legal a:focus-visible {
+  text-decoration-color: currentColor;
+  outline: none;
+}
+
+/* The red's lower edge as a wave, white below it */
+.site-footer__wave {
+  display: block;
+  width: 100%;
+  height: clamp(2.5rem, 6vw, 4.5rem);
+  margin-top: -1px;
+  fill: var(--bordeaux-profond);
+}
+
+/* White band: "Suivez-nous" with a bordeaux Instagram button, centred. */
 .site-footer__social {
-  --footer-arch-w: 12rem;
-  --footer-arch-gap: 0.4rem;
-
   display: flex;
-  justify-content: center;
-  padding: 1.75rem 1.25rem 0;
-  background: var(--bordeaux-profond);
-}
-
-.site-footer__arch {
-  position: relative;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  width: var(--footer-arch-w);
-  max-width: 100%;
-  min-height: calc(var(--footer-arch-w) * 5 / 4 + var(--safe-bottom));
-  /* Label and button sit below the curve, where the sides are straight, raised off the base. */
-  padding: 0 1rem calc(3.25rem + var(--safe-bottom));
-  border-radius: 999px 999px 0 0;
-  background: var(--bg-color);
+  justify-content: center;
+  gap: 0.85rem;
+  padding: 0.75rem calc(var(--footer-pad) + var(--safe-right))
+    calc(1.75rem + var(--safe-bottom)) calc(var(--footer-pad) + var(--safe-left));
   color: var(--bordeaux-profond);
 }
 
-/* Hairline just outside the arch, like the hero's */
-.site-footer__arch::before {
-  content: '';
-  position: absolute;
-  inset: calc(var(--footer-arch-gap) * -1) calc(var(--footer-arch-gap) * -1) 0;
-  border: 1px solid var(--creme);
-  border-bottom: 0;
-  border-radius: 999px 999px 0 0;
-  pointer-events: none;
-}
-
 .site-footer__label {
-  margin-bottom: 0.75rem;
   font-family: var(--font-subtitle);
   font-style: italic;
 }
@@ -149,15 +242,30 @@
   gap: 0.5rem;
 }
 
-/* Phones: Safari's toolbar floats over the bottom of the page. The strip under the arch
-   is as tall as the toolbar or the home indicator (--toolbar-h in style.css), and it is red, so the whole white arch, the label and the button stay above both. */
+/* Phones: one column, one left edge. The top padding clears the sticky header (bar plus
+   notch) when the footer is scrolled up under it. The white band runs on under Safari's
+   toolbar, with the label and the button above it. */
 @media (max-width: 768px) {
-  .site-footer__social {
-    padding-bottom: var(--toolbar-h);
+  .site-footer__inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+    padding-top: calc(4.5rem + var(--safe-top));
   }
 
-  .site-footer__arch {
-    min-height: calc(var(--footer-arch-w) * 5 / 4);
-    padding-bottom: 3.25rem;
+  /* Copyright and legal links centred, one under the other. */
+  .site-footer__legal {
+    flex-direction: column;
+    gap: 0.5rem;
+    border-top: 0;
+    padding-top: 0;
+    text-align: center;
+  }
+
+  .site-footer__legal ul {
+    justify-content: center;
+  }
+
+  .site-footer__social {
+    padding-bottom: calc(1.75rem + var(--toolbar-h));
   }
 }

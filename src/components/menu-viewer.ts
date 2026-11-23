@@ -15,7 +15,8 @@ const downloadIcon = `
     <path d="M5 21h14" />
   </svg>`;
 
-/** The menu page: a title, the download button, then every PDF page stacked in order. */
+/** The menu page: a title, the download button, then every PDF page stacked in order.
+ *  On phones the button sits under the pages instead (CSS shows one of the two). */
 export function createMenuPage(): HTMLElement {
   const main = document.createElement('div');
   main.className = 'menu-page';
@@ -33,6 +34,12 @@ export function createMenuPage(): HTMLElement {
     </div>
     <div class="menu-pdf" aria-label="Pages du menu">
       <p class="menu-pdf__status" role="status">Chargement du menu…</p>
+    </div>
+    <div class="menu-page__foot">
+      <a class="menu-download" href="${MENU_PDF}" download>
+        <span class="menu-download__text">Télécharger</span>
+        <span class="menu-download__icon">${downloadIcon}</span>
+      </a>
     </div>
   `;
 

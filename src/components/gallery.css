@@ -52,13 +52,71 @@
   width: calc(var(--pdf) * 400);
 }
 
-/* Bottom-right corner: the cream arch (Shape10, 540 pt canvas) centred on the right edge
-   with its top 500 pt above the bottom, cropped by the section's bottom edge, which meets
-   the footer. */
+/* Bottom-right corner: the cream arch (Shape10, 540 pt canvas) centred on the right edge,
+   standing on the footer: its flat base (95.3% down the canvas, 45.3% below the centre)
+   sits on the section's bottom edge, whole, with no gap. 3px lower, so the PNG's soft
+   bottom edge tucks under the footer instead of leaving a white seam. */
 .gallery__shape--arch {
-  top: calc(100% - var(--pdf) * 257.3);
+  --c: calc(var(--pdf) * 540);
+
+  top: calc(100% - var(--c) * 0.453 + 3px);
   left: 100%;
-  width: calc(var(--pdf) * 540);
+  width: var(--c);
+}
+
+/* "Contactez-nous" under the photos: phones only. */
+.gallery__cta {
+  display: none;
+}
+
+/* Phones: the photos fill the width, so the shapes would only peek out from behind them;
+   left out. Under the photos sits the "Contactez-nous" button instead. */
+@media (max-width: 768px) {
+  .gallery__shape--blue,
+  .gallery__shape--arch {
+    display: none;
+  }
+
+  .gallery__cta {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  .gallery__cta .about__cta-link {
+    width: min(100%, 22rem);
+  }
+
+  /* An even two-column grid: rows line up, and an odd last photo spans both columns, so
+     the gallery ends on a full row instead of a lone photo and a hole. */
+  .gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gallery-gap);
+    columns: auto;
+  }
+
+  .gallery__item {
+    margin: 0;
+  }
+
+  .gallery__item:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .gallery__tile,
+  .gallery__image {
+    height: 100%;
+  }
+
+  .gallery__image {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  .gallery__item:last-child:nth-child(odd) .gallery__image {
+    aspect-ratio: 16 / 9;
+  }
 }
 
 .gallery__head {
@@ -123,11 +181,15 @@
 }
 
 /* Viewer: a full-screen modal dialog over a dim, blurred page. */
+/* Viewer and scrim reach the large viewport, so they run on behind Safari's toolbar. */
 .gallery-lightbox {
   position: fixed;
   inset: 0;
+  top: 0;
   width: 100%;
   height: 100%;
+  height: 100lvh;
+  min-height: 100lvh;
   max-width: none;
   max-height: none;
   margin: 0;
@@ -140,6 +202,9 @@
 }
 
 .gallery-lightbox::backdrop {
+  top: 0;
+  height: 100lvh;
+  min-height: 100lvh;
   background: rgb(0 0 0 / 0.72);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);

@@ -1,0 +1,37 @@
+/* Legal pages: a title and a sentence, in one readable column. The top padding clears
+   the fixed red menu bubble on desktop; on phones the sticky header bar is in the flow. */
+.legal-page {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: calc(var(--safe-top) + var(--bubble-top) + var(--bubble-size) + clamp(2rem, 6vw, 4rem))
+    calc(clamp(1.25rem, 4vw, 2rem) + var(--safe-right)) clamp(4rem, 10vw, 7rem)
+    calc(clamp(1.25rem, 4vw, 2rem) + var(--safe-left));
+}
+
+.legal-page__title {
+  margin: 0 0 1.25rem;
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  color: var(--bordeaux-profond);
+  overflow-wrap: break-word;
+}
+
+.legal-page__text {
+  margin: 0 0 1.25rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--black);
+}
+
+.legal-page__text a {
+  color: var(--bordeaux-profond);
+}
+
+@media (max-width: 768px) {
+  .legal-page {
+    padding-top: clamp(2rem, 8vw, 3rem);
+  }
+}

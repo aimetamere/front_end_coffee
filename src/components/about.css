@@ -17,11 +17,10 @@
   overflow-x: clip;
 }
 
-/* Phones: landing on /#about leaves the title and its oval a clear line under the logo
-   pill and the menu button. */
+/* Phones: landing on /#about puts the section just under the sticky header bar. */
 @media (max-width: 768px) {
   .about {
-    scroll-margin-top: calc(var(--safe-top) + var(--bubble-size) * 0.6);
+    scroll-margin-top: calc(var(--safe-top) + 4.5rem);
   }
 }
 
@@ -103,8 +102,7 @@
   position: relative;
   z-index: 1;
   display: grid;
-  /* Two equal columns in a grid as wide as its content: both take the wider pill's width. */
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: auto;
   gap: 1rem 1.25rem;
   width: max-content;
   max-width: 100%;
@@ -239,5 +237,13 @@
     left: calc(4.6rem * -0.38);
     width: 4.6rem;
     translate: none;
+  }
+}
+
+/* Phones: the photo spans the column, so the corner shape would only peek out from behind
+   it and the buttons. Left out here. */
+@media (max-width: 768px) {
+  .about__shape--bordeaux {
+    display: none;
   }
 }

@@ -58,6 +58,7 @@ export function createHero(): HTMLElement {
       <img class="hero-shape hero-shape--blue" src="/shapes/Shape9.png" alt="" aria-hidden="true" width="1000" height="1000" />
       <img class="hero-shape hero-shape--arch" src="/shapes/Shape10.png" alt="" aria-hidden="true" width="1000" height="1000" />
       <img class="hero-shape hero-shape--dot" src="/shapes/Shape8.png" alt="" aria-hidden="true" width="1000" height="1000" />
+      <img class="hero-shape hero-shape--cream" src="/shapes/Shape5.png" alt="" aria-hidden="true" width="1000" height="1000" />
       <a class="hero-wordmark" href="#" aria-label="Café du Conservatoire, accueil">
         <svg class="hero-wordmark__svg" viewBox="${WORDMARK_VIEWBOX}" aria-hidden="true" focusable="false">
           <path id="hero-wordmark-path" class="hero-wordmark__path" d="${WORDMARK_PATH}" />
@@ -65,13 +66,16 @@ export function createHero(): HTMLElement {
           <text class="hero-wordmark__text"><textPath href="#hero-wordmark-path">${WORDMARK_TEXT}</textPath></text>
         </svg>
       </a>
+      <span class="hero-stack__probe" aria-hidden="true"></span>
       <div class="hero-stack__photo">
-        <img
-          class="hero-stack__base"
-          src="${building.src}"
-          alt="${building.alt}"
-          fetchpriority="high"
-        />
+        <div class="hero-stack__window">
+          <img
+            class="hero-stack__base"
+            src="${building.src}"
+            alt="${building.alt}"
+            fetchpriority="high"
+          />
+        </div>
         <div class="hero-carousel" aria-roledescription="carousel" aria-label="Le café">
           <div class="hero-carousel__viewport">
             <div class="hero-carousel__container">
@@ -181,33 +185,77 @@ export function createHero(): HTMLElement {
 /** Share of the runway spent fading the wordmark before the arch starts to grow. */
 const FADE_SHARE = 0.15;
 
-/** The arch grows to fill the pinned hero as the page scrolls through the runway. */
+/** The arch grows to fill the pinned hero as the page scrolls through the runway.
+ *
+ *  Built to stay smooth on phones: nothing is laid out again while scrolling. The photo
+ *  layer always covers the whole pinned frame; the arch is a clip-path on it (hero.css),
+ *  and the image inside only moves and scales with a transform, so the browser never
+ *  re-decodes or redraws it at a new size. Sizes are measured once (and again on resize);
+ *  each frame only reads window.scrollY and writes three numbers. */
 function mountArchGrowth(section: HTMLElement) {
   const sticky = section.querySelector<HTMLElement>('.hero-stack__sticky');
-  if (!sticky) return;
+  const probe = section.querySelector<HTMLElement>('.hero-stack__probe');
+  const image = section.querySelector<HTMLImageElement>('.hero-stack__base');
+  if (!sticky || !probe || !image) return;
 
   const clamp = (value: number) => Math.min(1, Math.max(0, value));
   let frame = 0;
   let active = false;
 
-  const update = () => {
+  // Measured geometry (CSS px).
+  let sectionTop = 0; // section's top in the document
+  let stickTop = 0; // where the frame pins: 0 on desktop, under the header on phones
+  let runway = 0;
+  let frameW = 0;
+  let frameH = 0;
+  let archW = 0;
+  let ratio = 1313 / 860; // building.jpg, until the image reports its own size
+  let imageW = 1;
+
+  const measure = () => {
+    const rect = section.getBoundingClientRect();
+    if (!rect.height) return false;
+    sectionTop = rect.top + window.scrollY;
+    stickTop = parseFloat(getComputedStyle(sticky).top) || 0;
+    runway = section.offsetHeight - sticky.offsetHeight;
+    frameW = sticky.clientWidth;
+    frameH = sticky.clientHeight;
+    archW = probe.getBoundingClientRect().width;
+    if (image.naturalWidth && image.naturalHeight) ratio = image.naturalWidth / image.naturalHeight;
+    // The image is drawn once at the size that covers the full frame (the largest the arch
+    // gets) and only scaled down from there.
+    imageW = Math.max(frameW, frameH * ratio);
+    section.style.setProperty('--img-w', `${imageW.toFixed(2)}px`);
+    section.classList.add('is-measured');
+    return true;
+  };
+
+  const paint = () => {
     frame = 0;
-    if (reducedMotion.matches) {
-      section.style.removeProperty('--grow');
-      section.style.removeProperty('--fade');
-      return;
+    let fade = 0;
+    let grow = 0;
+    if (!reducedMotion.matches && runway > 0) {
+      const progress = clamp((stickTop - (sectionTop - window.scrollY)) / runway);
+      // The wordmark fades out first, with the arch at rest, so the growing photo never runs into the letters.
+      fade = clamp(progress / FADE_SHARE);
+      grow = clamp((progress - FADE_SHARE) / (1 - FADE_SHARE));
     }
-    // The frame pins at its sticky top: 0 on desktop, under the header on phones.
-    const stickTop = parseFloat(getComputedStyle(sticky).top) || 0;
-    const runway = section.offsetHeight - sticky.offsetHeight;
-    const progress = runway > 0 ? clamp((stickTop - section.getBoundingClientRect().top) / runway) : 0;
-    // The wordmark fades out first, with the arch at rest, so the growing photo never runs into the letters.
-    section.style.setProperty('--fade', clamp(progress / FADE_SHARE).toFixed(4));
-    section.style.setProperty('--grow', clamp((progress - FADE_SHARE) / (1 - FADE_SHARE)).toFixed(4));
+    // Cover scale for the arch at this size (as object-fit: cover would give it).
+    const archH = archW * 1.25;
+    const boxW = archW + (frameW - archW) * grow;
+    const boxH = archH + (frameH - archH) * grow;
+    const scale = Math.max(boxW, boxH * ratio) / imageW;
+    section.style.setProperty('--fade', fade.toFixed(4));
+    section.style.setProperty('--grow', grow.toFixed(4));
+    section.style.setProperty('--img-k', scale.toFixed(5));
   };
 
   const schedule = () => {
-    if (!frame) frame = requestAnimationFrame(update);
+    if (!frame) frame = requestAnimationFrame(paint);
+  };
+
+  const remeasure = () => {
+    if (measure()) schedule();
   };
 
   new IntersectionObserver(([entry]) => {
@@ -216,11 +264,17 @@ function mountArchGrowth(section: HTMLElement) {
     schedule();
   }).observe(section);
 
+  // Sizes change with the window, the toolbar-independent svh frame, fonts and the image.
+  new ResizeObserver(remeasure).observe(sticky);
+  new ResizeObserver(remeasure).observe(section);
   window.addEventListener('scroll', () => active && schedule(), { passive: true });
-  window.addEventListener('resize', schedule);
-  mobileQuery.addEventListener('change', schedule);
+  window.addEventListener('resize', remeasure);
+  window.addEventListener('load', remeasure);
+  image.addEventListener('load', remeasure);
+  document.fonts?.ready.then(remeasure);
+  mobileQuery.addEventListener('change', remeasure);
   reducedMotion.addEventListener('change', schedule);
-  schedule();
+  requestAnimationFrame(remeasure);
 }
 
 /** Spreads the letters evenly so the phrase runs the whole arch path, end to end. */
