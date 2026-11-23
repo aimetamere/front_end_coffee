@@ -17,6 +17,14 @@
   overflow-x: clip;
 }
 
+/* Phones: landing on /#about leaves the title and its oval a clear line under the logo
+   pill and the menu button. */
+@media (max-width: 768px) {
+  .about {
+    scroll-margin-top: calc(var(--safe-top) + var(--bubble-size) * 0.6);
+  }
+}
+
 .about__inner {
   position: relative;
   z-index: 1;

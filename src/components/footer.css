@@ -148,3 +148,16 @@
 
   gap: 0.5rem;
 }
+
+/* Phones: Safari's toolbar floats over the bottom of the page. The strip under the arch
+   is as tall as the toolbar or the home indicator (--toolbar-h in style.css), and it is red, so the whole white arch, the label and the button stay above both. */
+@media (max-width: 768px) {
+  .site-footer__social {
+    padding-bottom: var(--toolbar-h);
+  }
+
+  .site-footer__arch {
+    min-height: calc(var(--footer-arch-w) * 5 / 4);
+    padding-bottom: 3.25rem;
+  }
+}

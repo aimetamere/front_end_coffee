@@ -244,6 +244,55 @@
   }
 }
 
+/* Phones: the arch and its lettering are sized together so the whole phrase, end letters
+   included, sits inside the screen with about 9% to spare on each side (the letters span
+   1.42 × the arch width). The pair sits above the middle of the visible screen
+   (svh, toolbar showing), and the shapes go in the bands above and below it, at a smaller
+   PDF scale, each one mostly on screen: cropped by an edge like on the menu PDF, but
+   recognizable, and never behind the letters. */
+@media (max-width: 768px) {
+  .hero-stack {
+    --arch-w: min(66svh, 58vw);
+    /* Height left over around the arch and its letters, a bit more of it below. */
+    --hero-free: calc(var(--stage-h) - var(--arch-w) * 1.45);
+    --arch-lift: max(1rem, var(--hero-free) * 0.52);
+  }
+
+  /* Smaller than on desktop: the screen width over 680 pt, or less where the bands around
+     the letters are short (a tall tablet, a short phone). */
+  .hero-shape {
+    --pdf: min(100vw / 680, var(--hero-free) * 0.0018);
+  }
+
+  /* Bordeaux oval (182 × 296 pt): its body in the top-left corner, under the status bar,
+     a quarter of it past the left edge. */
+  .hero-shape--left {
+    top: calc(var(--safe-top) * 0.5 + var(--pdf) * 140);
+    left: calc(var(--pdf) * 52);
+  }
+
+  /* Tilted blue oval (about 175 × 325 pt): its top 1rem under the letters' base, a
+     quarter past the left edge, the rest cropped by the bottom like on the PDF. */
+  .hero-shape--blue {
+    top: calc(100% - var(--arch-lift) + 1rem + var(--pdf) * 163);
+    left: calc(var(--pdf) * 40);
+  }
+
+  /* Cream arch (162 pt wide): its round top 1rem under the letters' base, two thirds of
+     its width on screen. */
+  .hero-shape--arch {
+    top: calc(100% - var(--arch-lift) + 1rem + var(--pdf) * 243);
+    left: calc(100% - var(--pdf) * 30);
+  }
+
+  /* Bordeaux circle (r 90 pt) low in the bottom-right corner, over the arch's foot, so the
+     arch's round top and upper body stay in view above it. */
+  .hero-shape--dot {
+    top: calc(100% - var(--pdf) * 22);
+    left: calc(100% - var(--pdf) * 60);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-stack__photo,
   .hero-wordmark {

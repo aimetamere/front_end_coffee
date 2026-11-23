@@ -15,15 +15,27 @@
 }
 
 @media (max-width: 768px) {
-  /* Its lettering (42% across the image) on the page's centre line, level with the bubble. */
+  /* Blue capsule on the left, the mirror of the menu bubble: same top, same height, same
+     inset from its edge. logo-og.png is mostly transparent; its cream letters fill
+     x 119–923 and y 139–806 of the 1094 × 962 image (804 × 667, 1.205 : 1). The image is
+     scaled so the letters are the pill's height less a little padding, and shifted so
+     they sit in the middle; the pill clips the transparent rest. */
   .site-header__mark {
+    --mark-pad-y: calc(var(--bubble-size) * 0.1);
+    --mark-pad-x: calc(var(--bubble-size) * 0.3);
+    --mark-letters-h: calc(var(--bubble-size) - var(--mark-pad-y) * 2);
+
     position: fixed;
     z-index: 50;
-    top: calc(var(--safe-top) + var(--bubble-top) * 0.6);
-    left: 50%;
+    top: calc(var(--safe-top) + var(--bubble-top));
+    left: calc(var(--safe-left) + var(--bubble-right));
     display: block;
-    height: calc(var(--bubble-size) + var(--bubble-top) * 0.8);
-    translate: -42% 0;
+    width: calc(var(--mark-letters-h) * 1.205 + var(--mark-pad-x) * 2);
+    height: var(--bubble-size);
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--bleu-noble);
+    box-shadow: 0 6px 18px rgb(3 74 173 / 0.25);
     -webkit-tap-highlight-color: transparent;
     transition:
       opacity 0.35s ease,
@@ -31,9 +43,18 @@
   }
 
   .site-header__mark img {
+    position: absolute;
+    top: calc(var(--mark-pad-y) - var(--mark-letters-h) * 139 / 667);
+    left: calc(var(--mark-pad-x) - var(--mark-letters-h) * 119 / 667);
     display: block;
     width: auto;
-    height: 100%;
+    max-width: none;
+    height: calc(var(--mark-letters-h) * 962 / 667);
+  }
+
+  .site-header__mark:focus-visible {
+    outline: 2px solid var(--bleu-noble);
+    outline-offset: 3px;
   }
 
   .site-header.is-over-hero .site-header__mark {
@@ -386,6 +407,26 @@ html.is-menu-open {
 .bubble-menu__info a:hover,
 .bubble-menu__info a:focus-visible {
   border-color: currentColor;
+}
+
+/* Phones: the menu stays full height, so its red fills behind Safari's toolbar, but the
+   arch, the address and hours on it, and the blue circle are placed from the visible
+   bottom (--toolbar-h in style.css), above the toolbar and the home indicator. After the
+   base rules, so these win. */
+@media (max-width: 768px) {
+  .bubble-menu__shape--arch {
+    bottom: calc(var(--arch-s) * -0.151 + var(--toolbar-h));
+  }
+
+  .bubble-menu__info {
+    bottom: calc(var(--arch-pad) + var(--toolbar-h));
+  }
+
+  /* Circle (radius 18% of its canvas): its base rests on the toolbar's top edge, its
+     centre just inside the left edge, so its body is on screen and above the toolbar. */
+  .bubble-menu__shape--circle {
+    top: calc(100lvh - var(--toolbar-h) - min(126svh, 150vw) * 0.18);
+  }
 }
 
 /* Staggered reveal of the menu content */

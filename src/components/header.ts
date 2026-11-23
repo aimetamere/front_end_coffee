@@ -159,19 +159,23 @@ export function createHeader(): HTMLElement {
     settled().then(finishClose);
   };
 
-  // The phone logo stays out of the hero (its wordmark is the name): hidden while the hero
-  // reaches the top tenth of the screen, where the logo sits. Pages without a hero show it.
+  // The phone logo stays out of the hero (its wordmark is the name): hidden until the
+  // section after the hero reaches the top band of the screen, where the logo sits. By
+  // then the hero's letters have long faded. Pages without a hero show it.
   header.classList.add('is-over-hero');
   requestAnimationFrame(() => {
     const hero = document.querySelector('.hero-stack');
-    if (!hero) {
+    const next = hero?.nextElementSibling;
+    if (!hero || !next) {
       header.classList.remove('is-over-hero');
       return;
     }
+    // The band runs from the top 15% of the screen far up the page, so the section counts
+    // as "in" whenever its top is above that line, even after a jump of several screens.
     new IntersectionObserver(
-      ([entry]) => header.classList.toggle('is-over-hero', entry.isIntersecting),
-      { rootMargin: '0px 0px -90% 0px' },
-    ).observe(hero);
+      ([entry]) => header.classList.toggle('is-over-hero', !entry.isIntersecting),
+      { rootMargin: '100000px 0px -85% 0px' },
+    ).observe(next);
   });
 
   bubble.addEventListener('click', open);

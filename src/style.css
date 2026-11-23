@@ -74,6 +74,28 @@ body {
   font-weight: 500;
 }
 
+/* Phones: the canvas behind the page is red, so the area under Safari's toolbar and the
+   bounce past the footer show the footer's red, never a white strip. The page itself stays
+   white. The body also clips sideways, for browsers without overflow: clip, so no edge
+   shape can widen the page. */
+@media (max-width: 768px) {
+  /* What Safari's floating toolbar covers at the bottom (the large viewport minus the small
+     one), or the home indicator, whichever is taller. Content that must stay readable sits
+     above it; red fills behind it. */
+  :root {
+    --toolbar-h: max(var(--safe-bottom), 100lvh - 100svh);
+  }
+
+  html {
+    background: var(--bordeaux-profond);
+  }
+
+  body {
+    background: var(--bg-color);
+    overflow-x: hidden;
+  }
+}
+
 h1 {
   font-family: var(--font-title);
   font-weight: 700;
