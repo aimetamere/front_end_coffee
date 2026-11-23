@@ -9,6 +9,14 @@ import { contactIcons } from './contact-icons';
  *  "Suivez-nous" and Instagram, so the page ends white like it starts. */
 const icons = contactIcons;
 
+/** The link to the page being shown (Accueil on /, Menu on /menu or /menu.html), not a section. */
+function isCurrentPage(href: string): boolean {
+  const url = new URL(href, location.href);
+  if (url.hash) return false;
+  const clean = (path: string) => path.replace(/\.html$/, '').replace(/\/index$/, '/');
+  return clean(url.pathname) === clean(location.pathname);
+}
+
 export function createFooter(): HTMLElement {
   const footer = document.createElement('footer');
   footer.className = 'site-footer';
@@ -17,11 +25,11 @@ export function createFooter(): HTMLElement {
       <div class="site-footer__start">
         <div class="site-footer__brand">
           <p class="site-footer__name">Café du Conservatoire</p>
-          <p class="site-footer__tagline">Café · Musique · Bonne bouffe</p>
+          <p class="site-footer__tagline">Café · Musique · Cuisine de saison</p>
         </div>
         <nav class="site-footer__nav" aria-label="Pied de page">
           <ul>
-            ${NAV_LINKS.map((link) => `<li><a href="${link.href}"><span>${capAccent(link.label)}</span></a></li>`).join('')}
+            ${NAV_LINKS.map((link) => `<li><a href="${link.href}"${isCurrentPage(link.href) ? ' aria-current="page"' : ''}><span>${capAccent(link.label)}</span></a></li>`).join('')}
           </ul>
         </nav>
       </div>

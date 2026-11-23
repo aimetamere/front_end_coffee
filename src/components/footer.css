@@ -313,6 +313,27 @@
     gap: 0.35rem;
   }
 
+  /* Site links on one line, no outlines: plain cream words. The page being shown is
+     highlighted with a cream fill, and a link lights up the same way on press. */
+  .site-footer__nav ul {
+    flex-wrap: nowrap;
+    gap: 0.15rem;
+    margin-left: -0.6rem;
+  }
+
+  .site-footer__nav a {
+    min-height: 2.5rem;
+    padding: 0.3rem 0.6rem;
+    border-color: transparent;
+    font-size: clamp(0.9rem, 4.3vw, 1.05rem);
+    white-space: nowrap;
+  }
+
+  .site-footer__nav a[aria-current='page'] {
+    background: var(--creme);
+    color: var(--bordeaux-profond);
+  }
+
   .site-footer__social {
     padding-bottom: calc(1.25rem + var(--toolbar-h));
   }
