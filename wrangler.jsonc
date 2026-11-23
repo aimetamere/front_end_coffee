@@ -1,0 +1,15 @@
+// Cloudflare Workers, static assets only: the built site in dist/ is served as is.
+// No server code: the contact form opens the visitor's mail app.
+// Deploy with `npm run deploy` (builds, then uploads). The account is the one you log
+// into with `npx wrangler login`.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cafe-du-conservatoire",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    // /menu serves menu.html, /cookies serves cookies.html, and so on.
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  }
+}
