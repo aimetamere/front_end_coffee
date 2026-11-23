@@ -55,8 +55,8 @@ export function createHero(): HTMLElement {
   section.innerHTML = `
     <div class="hero-stack__sticky">
       <img class="hero-shape hero-shape--left" src="/shapes/Shape7.png" alt="" aria-hidden="true" width="1000" height="1000" />
-      <img class="hero-shape hero-shape--circle" src="/shapes/Shape3.png" alt="" aria-hidden="true" width="1000" height="1000" />
-      <img class="hero-shape hero-shape--arch" src="/shapes/Shape6.png" alt="" aria-hidden="true" width="1000" height="1000" />
+      <img class="hero-shape hero-shape--blue" src="/shapes/Shape9.png" alt="" aria-hidden="true" width="1000" height="1000" />
+      <img class="hero-shape hero-shape--arch" src="/shapes/Shape10.png" alt="" aria-hidden="true" width="1000" height="1000" />
       <img class="hero-shape hero-shape--dot" src="/shapes/Shape8.png" alt="" aria-hidden="true" width="1000" height="1000" />
       <a class="hero-wordmark" href="#" aria-label="Café du Conservatoire, accueil">
         <svg class="hero-wordmark__svg" viewBox="${WORDMARK_VIEWBOX}" aria-hidden="true" focusable="false">

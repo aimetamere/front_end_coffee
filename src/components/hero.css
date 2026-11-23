@@ -1,13 +1,11 @@
 .hero-stack {
   --hero-card-height: min(68svh, 40rem);
   --hero-edge: 2rem;
-  --hero-header: 5.25rem;
   --arch-gap: 0.5rem;
 
   position: relative;
   /* Stacking-photo scroll runway, paused for now. */
   /* height: 420svh; */
-  height: calc(100svh - var(--hero-header) - var(--safe-top));
   background: var(--bg-color);
   /* Keeps the hero's layers and shadows from painting outside it (clip, unlike hidden, keeps sticky working). */
   overflow: clip;
@@ -58,16 +56,23 @@
 
 /* First screen on every width: the arch photo, the name wrapped around it, three cropped
    shapes. hero.ts draws the wordmark in units where the photo is 100 × 125, so the SVG is
-   sized from --arch-w and both always scale together. Each width sets --arch-w, --stage-h
-   (the pinned frame) and the runway height; mobile-style.css does it for phones. */
+   sized from --arch-w and both always scale together. One set of rules for every screen:
+   all sizes come from the viewport. */
 .hero-stack {
-  /* Fits the arch plus the letters above it in the screen height, and their width in the screen width. */
-  --arch-w: min(66svh, 52vw);
+  /* Fits the arch plus the letters above it (1.45 × its width) in the screen height, and
+     the letters in the screen width. */
+  --arch-w: min(66svh, 64vw);
   /* Matches ARCH_GAP (1.5 units of 100) in hero.ts */
   --arch-gap: calc(var(--arch-w) * 0.015);
   --arch-h: calc(var(--arch-w) * 5 / 4);
-  /* Space under the resting arch's base. 0 on desktop, where the base is the screen edge. */
-  --arch-lift: 0px;
+  /* Space under the resting arch's base. 0 on landscape screens, where the base is the
+     screen edge. On a screen much taller than the arch and its letters, the pair rises
+     to the middle; the photo still grows down to the edge. */
+  --arch-lift: max(0px, (var(--stage-h) - var(--arch-w) * 1.45) / 2 - 3rem);
+  /* Switches for the shapes below: --lifted is huge once the arch is lifted, --unlifted is
+     huge while it sits on the edge. Lengths can't be compared in calc(), so these stand in. */
+  --lifted: min(10000px, var(--arch-lift) * 10000);
+  --unlifted: max(0px, (1px - var(--arch-lift)) * 10000);
   /* Scroll growth: hero.ts sets --grow (0 → 1) across the runway. Stays 0 for reduced motion. */
   --grow: 0;
   /* hero.ts fades the wordmark out (--fade 0 → 1) before the arch starts growing. */
@@ -113,48 +118,59 @@
   translate: -50% -50%;
 }
 
-/* Each PNG is a 1000 × 1000 canvas with the shape centred in it. Sizes are the canvas;
-   top/left place the shape's centre. */
+/* The frame repeated on every page of the menu PDF, measured on the PDF (595.5 × 841 pt)
+   and placed with the same sizes and edge distances. --pdf is one PDF point (style.css):
+   the screen height over 841, or the width over 595.5 on a narrow screen. Widths are each
+   PNG's 1000 × 1000 canvas; top/left place the shape's centre.
 
-/* Shape sizes use --shape-u (style.css), shared with the À propos and gallery shapes. */
+   The shapes never reach the lettering. While the arch sits on the bottom edge (landscape),
+   the right-hand pair moves right, clear of the letters. Once the arch is lifted (tall
+   screens), the bottom shapes stay under the letters' base instead. */
 
-/* The frame repeated on every page of the menu PDF: a bordeaux shape entering from the
-   left, a blue circle in the bottom-left corner, a tall cream arch cropped by the right
-   edge, and a small bordeaux circle at the foot of that arch, partly over it. */
-
-/* Bordeaux ellipse (Shape7, 50% × 80% of its canvas: 32 × 51u), half off the left edge,
-   high on the screen like the menu's */
+/* Bordeaux oval (Shape7: 182 × 296 pt on a 370 pt canvas), centred 10 pt in from the left
+   edge and 77 pt down, so the top and left edges crop it */
 .hero-shape--left {
-  top: 14%;
-  left: 0;
-  width: calc(var(--shape-u) * 64);
+  top: calc(var(--pdf) * 76.8);
+  left: calc(var(--pdf) * 10);
+  width: calc(var(--pdf) * 370);
 }
 
-/* Blue circle (Shape3, 36% of its canvas: 43u across), centred on the bottom-left corner */
-.hero-shape--circle {
-  top: 100%;
-  left: 0;
-  width: calc(var(--shape-u) * 120);
+/* Blue oval tilted like the PDF's (Shape9: 117 × 337 pt on a 400 pt canvas), centred 15 pt
+   in from the left edge and 119 pt above the bottom, cropped by both */
+.hero-shape--blue {
+  top: max(
+    100% - var(--pdf) * 119.2,
+    100% - var(--arch-lift) + 2rem + var(--pdf) * 163 - var(--unlifted)
+  );
+  left: calc(var(--pdf) * 14.8);
+  width: calc(var(--pdf) * 400);
 }
 
-/* Cream arch (Shape6, 48.6% × 89.8% of its canvas: 44 × 81u), half off the right edge,
-   its base running off the bottom */
+/* Cream arch (Shape10: 162 × 486 pt on a 540 pt canvas, semicircle top), centred on the
+   right edge, its top 500 pt above the bottom. The lettering ends about 0.71 arch widths
+   right of centre. */
 .hero-shape--arch {
-  --arch-shape-w: calc(var(--shape-u) * 90);
-  top: calc(100% - var(--arch-shape-w) * 0.26);
-  left: 100%;
-  width: var(--arch-shape-w);
+  top: max(
+    100% - var(--pdf) * 257.3,
+    100% - var(--arch-lift) + 2rem + var(--pdf) * 243 - var(--unlifted)
+  );
+  left: max(100%, 50% + var(--arch-w) * 0.73 + var(--pdf) * 81 - var(--lifted));
+  width: calc(var(--pdf) * 540);
 }
 
-/* Bordeaux circle (Shape8, 64% of its canvas: 22u across), centred just inside the cream
-   arch's left side at the bottom edge, so it sits over the arch's foot and clears the
-   lettering. Drawn after the arch. */
+/* Bordeaux circle (Shape8: r 90 pt on a 280 pt canvas), centred 30 pt in from the right
+   edge and 37 pt above the bottom, over the arch's foot. Drawn after the arch. Kept clear
+   of the lettering the same way. */
 .hero-shape--dot {
-  top: calc(100% - var(--shape-u) * 4);
-  /* On narrow desktops it moves right so it never reaches the lettering, which ends about
-     0.71 arch widths right of centre. 11u is the circle's radius. */
-  left: max(100% - var(--shape-u) * 19, 50% + var(--arch-w) * 0.73 + var(--shape-u) * 11);
-  width: calc(var(--shape-u) * 34);
+  top: max(
+    100% - var(--pdf) * 37.4,
+    100% - var(--arch-lift) + 2rem + var(--pdf) * 90 - var(--unlifted)
+  );
+  left: max(
+    100% - var(--pdf) * 30.2,
+    50% + var(--arch-w) * 0.73 + var(--pdf) * 90 - var(--lifted)
+  );
+  width: calc(var(--pdf) * 280);
 }
 
 .hero-wordmark {
@@ -215,8 +231,8 @@
   visibility: hidden;
 }
 
-/* The looping carousel (building and interior slides, progress loader) is not shown;
-   its code is kept in hero.ts and mobile-style.css. */
+/* The looping carousel (building and interior slides, progress loader) is not shown.
+   Its code is kept in hero.ts (SHOW_CAROUSEL); its slide styles are in git history. */
 .hero-carousel {
   display: none;
 }

@@ -25,12 +25,14 @@ export function createGallery(): HTMLElement {
   section.className = 'gallery';
   section.setAttribute('aria-labelledby', 'gallery-title');
   section.innerHTML = `
-    <img class="gallery__shape gallery__shape--oval" src="/shapes/Shape4.png" alt="" aria-hidden="true" width="1000" height="1000" loading="lazy" />
-    <img class="gallery__shape gallery__shape--arch" src="/shapes/Shape1.png" alt="" aria-hidden="true" width="1000" height="1000" loading="lazy" />
+    <img class="gallery__shape gallery__shape--arch" src="/shapes/Shape10.png" alt="" aria-hidden="true" width="1000" height="1000" loading="lazy" />
     <div class="gallery__head section-heading">
       <img class="section-heading__oval" src="/shapes/Shape2.png" alt="" aria-hidden="true" width="1000" height="1000" />
       <h2 id="gallery-title" class="gallery__title">Galerie</h2>
+      <p class="section-subtitle">Une cuisine faite avec passion, à partir de produits frais.</p>
     </div>
+    <div class="gallery__body">
+    <img class="gallery__shape gallery__shape--blue" src="/shapes/Shape9.png" alt="" aria-hidden="true" width="1000" height="1000" loading="lazy" />
     <ul class="gallery__grid">
       ${photos
         .map(
@@ -43,6 +45,7 @@ export function createGallery(): HTMLElement {
         )
         .join('')}
     </ul>
+    </div>
 
     <dialog class="gallery-lightbox" aria-label="Photo agrandie">
       <button type="button" class="gallery-lightbox__close" aria-label="Fermer la photo"><span aria-hidden="true">×</span></button>

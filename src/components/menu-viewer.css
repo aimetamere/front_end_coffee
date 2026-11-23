@@ -2,20 +2,39 @@
 .menu-page {
   --menu-column: 56rem;
 
-  /* On desktop the header takes no height; this clears the fixed red menu bubble. */
-  padding: calc(7rem + var(--safe-top)) calc(2rem + var(--safe-right)) 5rem
-    calc(2rem + var(--safe-left));
+  --menu-pad: clamp(1rem, 3vw, 2rem);
+
+  /* Clears the fixed red menu bubble (and the phone logo beside it). */
+  padding: calc(var(--safe-top) + var(--bubble-top) + var(--bubble-size) + clamp(1.5rem, 4vw, 2.5rem))
+    calc(var(--menu-pad) + var(--safe-right)) calc(clamp(3.5rem, 8vw, 5rem) + var(--safe-bottom))
+    calc(var(--menu-pad) + var(--safe-left));
   background: var(--bg-color);
 }
 
 .menu-page__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.25rem 2rem;
   max-width: var(--menu-column);
-  margin: 0 auto 2.5rem;
+  margin: 0 auto clamp(1.5rem, 4vw, 2.5rem);
+}
+
+/* "Le menu" with the download button just to its right, centred on the heading. The
+   button's large negative block margins keep it out of the row's height, so the row is
+   exactly as tall as the heading and the oval (placed from the top) stays level with it. */
+.menu-page__title-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+.menu-page__title {
+  white-space: nowrap;
+}
+
+/* Full size wherever it fits; on the narrowest phones it gives up a little width rather
+   than push the title onto two lines. */
+.menu-page__title-row .menu-download {
+  flex: 0 1 auto;
+  min-width: 9.5rem;
+  margin-block: -10rem;
 }
 
 .menu-page__title {
@@ -112,7 +131,7 @@
 /* The pages: each one the full column width, at its own A4 proportion (set in menu-viewer.ts). */
 .menu-pdf {
   display: grid;
-  gap: 1.5rem;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
   max-width: var(--menu-column);
   margin: 0 auto;
 }
@@ -120,7 +139,7 @@
 .menu-pdf__page {
   position: relative;
   overflow: hidden;
-  border-radius: 0.5rem;
+  border-radius: clamp(0.375rem, 1vw, 0.5rem);
   background: #f4f4f4;
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.08);
   aspect-ratio: 595.5 / 842.25;
@@ -150,28 +169,14 @@
   color: var(--bordeaux-profond);
 }
 
-@media (max-width: 768px) {
-  /* Menu page: the header is in the page flow here, so less space above. Pages stay the
-     full column width; the download button is full width and easy to tap. */
-  .menu-page {
-    padding: 1.5rem calc(1rem + var(--safe-right)) 3.5rem calc(1rem + var(--safe-left));
+/* Below 340px "Le menu" and the button no longer fit on one line: the button goes under it. */
+@media (max-width: 340px) {
+  .menu-page__title-row {
+    flex-wrap: wrap;
   }
 
-  .menu-page__head {
-    margin-bottom: 1.5rem;
-  }
-
-  .menu-download {
-    width: 100%;
-    height: 3.25rem;
-  }
-
-  .menu-pdf {
-    gap: 1rem;
-  }
-
-  .menu-pdf__page {
-    border-radius: 0.375rem;
+  .menu-page__title-row .menu-download {
+    margin-block: 0.25rem 0;
   }
 }
 

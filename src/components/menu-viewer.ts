@@ -17,18 +17,19 @@ const downloadIcon = `
 
 /** The menu page: a title, the download button, then every PDF page stacked in order. */
 export function createMenuPage(): HTMLElement {
-  const main = document.createElement('main');
+  const main = document.createElement('div');
   main.className = 'menu-page';
   main.innerHTML = `
-    <div class="menu-page__head">
-      <div class="section-heading">
-        <img class="section-heading__oval" src="/shapes/Shape2.png" alt="" aria-hidden="true" width="1000" height="1000" />
+    <div class="menu-page__head section-heading">
+      <img class="section-heading__oval" src="/shapes/Shape2.png" alt="" aria-hidden="true" width="1000" height="1000" />
+      <div class="menu-page__title-row">
         <h1 class="menu-page__title">Le menu</h1>
+        <a class="menu-download" href="${MENU_PDF}" download>
+          <span class="menu-download__text">Télécharger</span>
+          <span class="menu-download__icon">${downloadIcon}</span>
+        </a>
       </div>
-      <a class="menu-download" href="${MENU_PDF}" download>
-        <span class="menu-download__text">Télécharger</span>
-        <span class="menu-download__icon">${downloadIcon}</span>
-      </a>
+      <p class="section-subtitle">Le menu de saison imaginé par notre chef Angelo.</p>
     </div>
     <div class="menu-pdf" aria-label="Pages du menu">
       <p class="menu-pdf__status" role="status">Chargement du menu…</p>
@@ -77,6 +78,9 @@ async function mountPdf(container: HTMLElement) {
 
   status.remove();
   container.append(...sheets.map((sheet) => sheet.frame));
+  // The pages just took their full height: a link to a section further down
+  // (/menu.html#contact) lands there again.
+  if (location.hash) document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView();
 
   const paint = (sheet: Sheet) => {
     const ratio = Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO);

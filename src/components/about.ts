@@ -6,20 +6,14 @@ const interior = {
   alt: 'La salle du café, avec ses tables, ses chaises rouges et bleues et ses suspensions lumineuses',
 };
 
-const arrowIcon = `
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M15 5 8 12l7 7" />
-  </svg>`;
-
 export function createAbout(): HTMLElement {
   const section = document.createElement('section');
   section.id = 'about';
   section.className = 'about';
   section.setAttribute('aria-labelledby', 'about-title');
   section.innerHTML = `
-    <img class="about__shape about__shape--circle" src="/shapes/Shape3.png" alt="" aria-hidden="true" width="1000" height="1000" loading="lazy" />
-    <img class="about__shape about__shape--cream" src="/shapes/Shape5.png" alt="" aria-hidden="true" width="1000" height="1000" loading="lazy" />
     <div class="about__inner">
+      <img class="about__shape about__shape--bordeaux" src="/shapes/Shape7.png" alt="" aria-hidden="true" width="1000" height="1000" loading="lazy" />
       <div class="about__copy">
         <img class="about__shape about__shape--oval" src="/shapes/Shape2.png" alt="" aria-hidden="true" width="1000" height="1000" loading="lazy" />
         <h2 id="about-title" class="about__title">${capAccent('À propos de nous')}</h2>
@@ -35,20 +29,20 @@ export function createAbout(): HTMLElement {
           inspirant où la musique et la cuisine fusionnent pour votre plus grand plaisir.
         </p>
       </div>
-      <figure class="about__media" id="about-media">
+      <figure class="about__media">
         <img class="about__photo" src="${interior.src}" alt="${interior.alt}" loading="lazy" />
-        <button
-          type="button"
-          class="about__toggle"
-          aria-controls="about-media"
-          aria-expanded="false"
-          aria-label="Agrandir la photo"
-        >${arrowIcon}</button>
       </figure>
     </div>
     <div class="about__cta">
       <a class="about__cta-link" href="/menu.html">
-        Voir le menu
+        Voir le menu de saison
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14" />
+          <path d="m13 6 6 6-6 6" />
+        </svg>
+      </a>
+      <a class="about__cta-link about__cta-link--outline" href="/menu.html#contact">
+        Contactez-nous
         <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
           <path d="M5 12h14" />
           <path d="m13 6 6 6-6 6" />
@@ -56,13 +50,6 @@ export function createAbout(): HTMLElement {
       </a>
     </div>
   `;
-
-  const toggle = section.querySelector<HTMLButtonElement>('.about__toggle')!;
-  toggle.addEventListener('click', () => {
-    const expanded = section.classList.toggle('is-expanded');
-    toggle.setAttribute('aria-expanded', String(expanded));
-    toggle.setAttribute('aria-label', expanded ? 'Réduire la photo' : 'Agrandir la photo');
-  });
 
   return section;
 }

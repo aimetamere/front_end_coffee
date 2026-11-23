@@ -1,13 +1,15 @@
 /* Photo gallery under À propos: masonry columns, then a full-screen viewer. */
 .gallery {
-  --gallery-radius: 1.25rem;
+  --gallery-radius: clamp(0.875rem, 2vw, 1.25rem);
+  --gallery-gap: clamp(0.75rem, 1.6vw, 1.25rem);
+  --gallery-pad: clamp(1.25rem, 3vw, 2rem);
 
-  /* Above the about section, so the about circle running into it stays behind the photos.
-     No background of its own: the page is white, and the circle shows through. */
+  /* Above the about section, so the about oval running into it stays behind the photos.
+     No background of its own: the page is white, and the shapes show through. */
   position: relative;
   z-index: 1;
-  /* 8rem on top matches the À propos bottom padding around the circle they share. */
-  padding: 8rem 2rem 6rem;
+  padding: clamp(3.5rem, 10vw, 8rem) calc(var(--gallery-pad) + var(--safe-right))
+    clamp(3.5rem, 8vw, 6rem) calc(var(--gallery-pad) + var(--safe-left));
   /* Crops its shapes at the screen sides and keeps them off the footer. */
   overflow: clip;
 }
@@ -31,20 +33,32 @@
   translate: -50% -50%;
 }
 
-/* Sizes use --shape-u (style.css), shared with the hero and À propos shapes. */
+/* The hero's PDF shapes at the hero's size (--pdf in style.css), mirrored to the other sides. */
 
-/* Blue oval (36% × 75% of its canvas: 32 × 66u, like the À propos cream oval), half off the right edge */
-.gallery__shape--oval {
-  top: 38%;
-  left: 100%;
-  width: calc(var(--shape-u) * 88);
+/* The photos and the blue oval. Centred like the grid, so 50% - 50vw is the screen's left
+   edge. */
+.gallery__body {
+  position: relative;
+  max-width: 78rem;
+  margin: 0 auto;
 }
 
-/* Cream arch (31% × 81% of its canvas: 30 × 79u, like the hero's), half off the left edge, lower down */
+/* Tilted blue oval (Shape9, 400 pt canvas), 15 pt inside the left screen edge like the
+   hero's. Its top is 1rem under the top of the photos, so it only ever sits behind them,
+   never under the title or its subtitle. */
+.gallery__shape--blue {
+  top: calc(1rem + var(--pdf) * 163);
+  left: calc(50% - 50vw + var(--pdf) * 14.8);
+  width: calc(var(--pdf) * 400);
+}
+
+/* Bottom-right corner: the cream arch (Shape10, 540 pt canvas) centred on the right edge
+   with its top 500 pt above the bottom, cropped by the section's bottom edge, which meets
+   the footer. */
 .gallery__shape--arch {
-  top: 64%;
-  left: 0;
-  width: calc(var(--shape-u) * 97);
+  top: calc(100% - var(--pdf) * 257.3);
+  left: 100%;
+  width: calc(var(--pdf) * 540);
 }
 
 .gallery__head {
@@ -62,18 +76,18 @@
   color: var(--black);
 }
 
-/* Masonry: photos flow down three columns, each one the full column width. */
+/* Masonry: photos flow down the columns, each one the full column width. Three columns
+   where they can each be 9rem wide, two on a phone. */
 .gallery__grid {
-  max-width: 78rem;
-  margin: 0 auto;
+  margin: 0;
   padding: 0;
   list-style: none;
-  column-count: 3;
-  column-gap: 1.25rem;
+  columns: 3 9rem;
+  column-gap: var(--gallery-gap);
 }
 
 .gallery__item {
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--gallery-gap);
   break-inside: avoid;
 }
 
@@ -142,8 +156,8 @@
 /* Large photo and the thumbnail strip side by side, centred. Clicks on the empty
    space around them close the viewer. */
 .gallery-lightbox__stage {
-  --strip-w: 6.5rem;
-  --stage-gap: 1.25rem;
+  --strip-w: clamp(4rem, 9vw, 6.5rem);
+  --stage-gap: clamp(0.75rem, 2vw, 1.25rem);
 
   display: flex;
   align-items: center;
@@ -151,7 +165,10 @@
   gap: var(--stage-gap);
   width: 100%;
   height: 100%;
-  padding: 4.5rem 2rem;
+  /* Clear of the close button above, the home indicator below. */
+  padding: calc(var(--safe-top) + var(--bubble-top) * 2 + var(--bubble-size))
+    calc(clamp(0.75rem, 3vw, 2rem) + var(--safe-right)) calc(2rem + var(--safe-bottom))
+    calc(clamp(0.75rem, 3vw, 2rem) + var(--safe-left));
 }
 
 /* Whole photo, never cropped */
@@ -202,7 +219,7 @@
   width: 100%;
   padding: 0;
   border: 0;
-  border-radius: 0.6rem;
+  border-radius: clamp(0.45rem, 1.2vw, 0.6rem);
   overflow: hidden;
   background: transparent;
   opacity: 0.5;
@@ -238,19 +255,19 @@
      bubble reads as turning into the × while a photo is open. */
   position: absolute;
   z-index: 1;
-  top: calc(var(--safe-top) + (5.25rem - 4rem) / 2);
-  right: calc(2rem + var(--safe-right));
+  top: calc(var(--safe-top) + var(--bubble-top));
+  right: calc(var(--safe-right) + var(--bubble-right));
   display: grid;
   place-items: center;
-  width: 4rem;
-  height: 4rem;
+  width: var(--bubble-size);
+  height: var(--bubble-size);
   padding: 0;
   border: 0;
   border-radius: 50%;
   background: var(--bordeaux-profond);
   color: var(--creme);
   font-family: var(--font-title);
-  font-size: 2.1rem;
+  font-size: calc(var(--bubble-size) * 0.525);
   line-height: 1;
   cursor: pointer;
   transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
@@ -261,8 +278,10 @@
   margin-top: -0.12em;
 }
 
-.gallery-lightbox__close:hover {
-  transform: rotate(90deg);
+@media (hover: hover) {
+  .gallery-lightbox__close:hover {
+    transform: rotate(90deg);
+  }
 }
 
 .gallery-lightbox__close:focus-visible {

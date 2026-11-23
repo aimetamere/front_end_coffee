@@ -1,66 +1,54 @@
+/* No bar on any screen: height 0, so nothing covers the composition, and only the fixed
+   red menu bubble shows. On phones the arched logo also floats at the top centre, on a
+   transparent background. It stays out of the hero, whose wordmark is the name: header.ts
+   hides it (.is-over-hero) while the hero is under it. */
 .site-header {
-  --header-height: 5.25rem;
-  --sphere-size: 16rem;
-  --bubble-size: 4rem;
   --bubble-ease: cubic-bezier(0.76, 0, 0.24, 1);
 
   position: relative;
   z-index: 10;
-  display: flex;
-  align-items: center;
-  height: calc(var(--header-height) + var(--safe-top));
-  padding: var(--safe-top) calc(var(--bubble-size) + 3rem + var(--safe-right)) 0
-    calc(var(--sphere-size) * 0.62 + 1.35rem + var(--safe-left));
-  background: var(--bg-color);
+  height: 0;
 }
 
-/* Desktop: no bar and no name in the corner. The hero's wordmark and Shape3 take their place;
-   only the fixed red menu bubble stays. Height 0 so nothing covers the composition. */
-@media (min-width: 769px) {
-  .site-header {
-    height: 0;
-    padding: 0;
-    background: transparent;
-  }
-
-  .site-header__logo,
-  .site-header__sphere {
-    display: none;
-  }
-}
-
-/* Blue circle cut off by the top-left corner */
-.site-header__lip {
+.site-header__mark {
   display: none;
 }
 
-.site-header__sphere {
-  position: absolute;
-  top: calc(var(--sphere-size) * -0.42 + var(--safe-top));
-  left: calc(var(--sphere-size) * -0.4);
-  width: var(--sphere-size);
-  height: var(--sphere-size);
-  overflow: hidden;
-  border-radius: 50%;
-  background: var(--bleu-noble);
-  pointer-events: none;
-  animation: sphere-in 1.2s var(--bubble-ease) backwards;
+@media (max-width: 768px) {
+  /* Its lettering (42% across the image) on the page's centre line, level with the bubble. */
+  .site-header__mark {
+    position: fixed;
+    z-index: 50;
+    top: calc(var(--safe-top) + var(--bubble-top) * 0.6);
+    left: 50%;
+    display: block;
+    height: calc(var(--bubble-size) + var(--bubble-top) * 0.8);
+    translate: -42% 0;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      opacity 0.35s ease,
+      visibility 0.35s;
+  }
+
+  .site-header__mark img {
+    display: block;
+    width: auto;
+    height: 100%;
+  }
+
+  .site-header.is-over-hero .site-header__mark {
+    opacity: 0;
+    visibility: hidden;
+  }
 }
 
-.site-header__logo {
-  position: relative;
-  font-family: var(--font-title);
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: var(--bleu-noble);
-  text-decoration: none;
-}
-
-/* Red menu bubble — fixed so the menu is always one tap away */
+/* Red menu bubble, fixed so the menu is always one tap away. Its size and spot are shared
+   with the gallery viewer's close button (--bubble-* in style.css): at least 52px across,
+   clear of the notch through the safe areas. */
 .menu-bubble {
   position: fixed;
-  top: calc(var(--safe-top) + (var(--header-height) - var(--bubble-size)) / 2);
-  right: calc(2rem + var(--safe-right));
+  top: calc(var(--safe-top) + var(--bubble-top));
+  right: calc(var(--safe-right) + var(--bubble-right));
   z-index: 50;
   display: grid;
   place-items: center;
@@ -72,15 +60,18 @@
   background: var(--bordeaux-profond);
   box-shadow: 0 10px 30px rgb(122 0 0 / 0.35);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition:
     transform 0.5s var(--bubble-ease),
     box-shadow 0.5s var(--bubble-ease);
   animation: sphere-in 1.2s var(--bubble-ease) 0.15s backwards;
 }
 
-.menu-bubble:hover {
-  transform: scale(1.08);
-  box-shadow: 0 14px 40px rgb(122 0 0 / 0.45);
+@media (hover: hover) {
+  .menu-bubble:hover {
+    transform: scale(1.08);
+    box-shadow: 0 14px 40px rgb(122 0 0 / 0.45);
+  }
 }
 
 .menu-bubble:focus-visible {
@@ -160,9 +151,20 @@
   transition-delay: calc(var(--burger-speed) * 1.3), calc(var(--burger-speed) * 1.3);
 }
 
-/* Full-screen menu that grows out of the bubble */
+/* Full-screen menu that grows out of the bubble: links on the left, the small arched
+   wordmark at the top, the blue circle (Shape3) in the bottom-left corner and the cream arch
+   (Shape6) on the right with the address on it. Both PNGs are 1000 × 1000 canvases with
+   the shape centred. Every size follows the screen. */
 .bubble-menu {
   --menu-duration: 0.8s;
+  /* Shape6 and the address share one size, --arch-s (the PNG canvas), so the text always
+     sits inside the cream with the same margin. The arch fills x 25.7–74.3% and
+     y 5.1–94.9% of its canvas; 4% of the canvas runs past the right edge and 10% past the
+     bottom, so the visible cream is 44.6% of --arch-s wide. */
+  --arch-s: clamp(30rem, min(80svh, 135vw), 46rem);
+  --arch-visible-w: calc(var(--arch-s) * 0.446);
+  --arch-pad: calc(var(--arch-s) * 0.05);
+  --menu-pad: clamp(1.5rem, 7vw, 6rem);
 
   position: fixed;
   inset: 0 0 auto;
@@ -177,13 +179,21 @@
   overflow: hidden;
   background: var(--bordeaux-profond);
   color: var(--creme);
-  clip-path: circle(
-    var(--bubble-reach) at var(--bubble-open-x, var(--bubble-x)) var(--bubble-open-y, var(--bubble-y))
-  );
+  clip-path: circle(var(--bubble-reach) at var(--bubble-x) var(--bubble-y));
 }
 
+/* Covers the strip under the toolbar, so the top layer never leaves it white. */
 .bubble-menu::backdrop {
+  position: fixed;
+  inset: 0;
+  height: 100lvh;
   background: transparent;
+}
+
+/* Root stays as tall as the large viewport: pinning the body takes it out of flow, and a
+   collapsed root is what Safari paints white at the bottom. */
+html.is-menu-open {
+  min-height: 100lvh;
 }
 
 .bubble-menu[open] {
@@ -194,6 +204,7 @@
   animation: bubble-shrink var(--menu-duration) var(--bubble-ease) forwards;
 }
 
+/* Close circle exactly over the menu bubble */
 .bubble-menu__close {
   position: absolute;
   top: calc(var(--bubble-y) - var(--bubble-r));
@@ -209,14 +220,17 @@
   background: transparent;
   color: var(--creme);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition:
     transform 0.5s var(--bubble-ease),
     background-color 0.3s;
 }
 
-.bubble-menu__close:hover {
-  transform: rotate(90deg);
-  background: rgb(213 176 135 / 0.12);
+@media (hover: hover) {
+  .bubble-menu__close:hover {
+    transform: rotate(90deg);
+    background: rgb(213 176 135 / 0.12);
+  }
 }
 
 .bubble-menu__close:focus-visible {
@@ -224,37 +238,44 @@
   outline-offset: 4px;
 }
 
-/* Blue sphere cut off at the bottom-left. The wordmark lives on the red, not in this circle. */
-.bubble-menu__sphere {
+.bubble-menu__shape {
   position: absolute;
-  bottom: -14vmax;
-  left: -16vmax;
-  width: 36vmax;
-  height: 36vmax;
-  overflow: hidden;
-  border-radius: 50%;
-  background: var(--bleu-noble);
+  z-index: 0;
+  display: block;
+  height: auto;
+  max-width: none;
   pointer-events: none;
+  user-select: none;
 }
 
-.bubble-menu__mark {
-  display: none;
+/* Circle is 36% of its canvas. Centre just inside the bottom-left corner. */
+.bubble-menu__shape--circle {
+  top: 95%;
+  left: 5svh;
+  width: min(126svh, 150vw);
+  translate: -50% -50%;
 }
 
-.bubble-menu[open] .bubble-menu__sphere {
+.bubble-menu__shape--arch {
+  right: calc(var(--arch-s) * -0.297);
+  bottom: calc(var(--arch-s) * -0.151);
+  width: var(--arch-s);
+}
+
+.bubble-menu[open] .bubble-menu__shape {
   animation: sphere-in 1s var(--bubble-ease) 0.2s both;
 }
 
-/* Wordmark on the open red field, clear of the links and the address */
+/* Small arched wordmark at the top centre. Its lettering sits at 42% of the image width. */
 .bubble-menu__wordmark {
   position: absolute;
   z-index: 1;
-  top: 18%;
-  right: 10%;
+  top: calc(1.75rem + var(--safe-top));
+  left: 50%;
   display: block;
-  width: 14rem;
-  height: 14rem;
-  object-fit: contain;
+  width: clamp(6.5rem, 20vw, 9rem);
+  height: auto;
+  translate: -42% 0;
   pointer-events: none;
 }
 
@@ -262,70 +283,73 @@
   animation: sphere-in 1s var(--bubble-ease) 0.25s both;
 }
 
+/* Links centred on the left, high enough on tall screens to stay clear of the arch. */
 .bubble-menu__content {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 3rem;
+  justify-content: center;
+  align-items: flex-start;
   min-height: 100%;
-  padding: calc(7rem + var(--safe-top)) calc(6rem + var(--safe-right)) calc(4rem + var(--safe-bottom))
-    calc(6rem + var(--safe-left));
+  padding: calc(6rem + var(--safe-top)) 0
+    calc(max(6rem, 100svh - 100vw * 1.6) + var(--safe-bottom))
+    calc(var(--menu-pad) + var(--safe-left));
 }
 
-.bubble-menu__info {
-  align-self: flex-end;
+/* Narrow screens: the arch takes the lower right, so the links start under the wordmark. */
+@media (max-width: 768px) {
+  .bubble-menu__content {
+    justify-content: flex-start;
+    padding-top: calc(clamp(7.5rem, 30vw, 9.5rem) + var(--safe-top));
+  }
+}
+
+/* The smallest phones: slightly smaller links, so the last one stays clear of the arch. */
+@media (max-width: 340px) {
+  .bubble-menu__links a {
+    font-size: 1.9rem;
+  }
 }
 
 .bubble-menu__links {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: clamp(0.25rem, 1vw, 0.5rem);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .bubble-menu__links a {
-  position: relative;
   display: inline-block;
   font-family: var(--font-title);
   font-weight: 700;
-  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-size: clamp(2.25rem, 6vw, 5rem);
   line-height: 1.1;
   color: var(--creme);
   text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
   transition: color 0.3s;
 }
 
-.bubble-menu__links a::after {
-  content: "";
-  position: absolute;
-  bottom: 0.1em;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: currentColor;
-  transform: scaleX(0);
-  transform-origin: bottom right;
-  transition: transform 0.4s cubic-bezier(0.65, 0.05, 0.36, 1);
-}
-
 .bubble-menu__links a:hover,
-.bubble-menu__links a:focus-visible {
+.bubble-menu__links a:focus-visible,
+.bubble-menu__links a:active {
   color: var(--bg-color);
   outline: none;
 }
 
-.bubble-menu__links a:hover::after,
-.bubble-menu__links a:focus-visible::after {
-  transform: scaleX(1);
-  transform-origin: bottom left;
-}
-
+/* Address in the lower part of Shape6, where its sides are straight: same margin left,
+   right and below. The type follows the arch, so the email line always fits the cream
+   (15.35em of the mono, 34.6% of --arch-s). */
 .bubble-menu__info {
-  font-size: 0.95rem;
-  line-height: 1.7;
+  position: absolute;
+  right: var(--arch-pad);
+  bottom: calc(var(--arch-pad) + var(--safe-bottom));
+  width: calc(var(--arch-visible-w) - var(--arch-pad) * 2);
+  color: var(--bordeaux-profond);
+  font-size: min(0.8125rem, var(--arch-s) * 0.0214);
+  line-height: 1.75;
 }
 
 .bubble-menu__info p {
@@ -333,127 +357,35 @@
 }
 
 .bubble-menu__label {
-  margin-bottom: 0.5rem !important;
+  margin-bottom: 0.75rem !important;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgb(122 0 0 / 0.25);
   font-family: var(--font-subtitle);
   font-style: italic;
-  opacity: 0.8;
+  font-size: 1.077em;
+  text-transform: lowercase;
+}
+
+/* The longest hours line is 29 characters: at 0.88em it fits the width the email line
+   (25 characters) was sized for, so each line stays on one row. */
+.bubble-menu__hours {
+  margin-top: 0.75rem !important;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgb(122 0 0 / 0.25);
+  font-size: 0.88em;
+  white-space: nowrap;
 }
 
 .bubble-menu__info a {
   color: inherit;
   text-decoration: none;
-  border-bottom: 1px solid rgb(213 176 135 / 0.4);
+  border-bottom: 1px solid rgb(122 0 0 / 0.3);
   transition: border-color 0.3s;
 }
 
-.bubble-menu__info a:hover {
+.bubble-menu__info a:hover,
+.bubble-menu__info a:focus-visible {
   border-color: currentColor;
-}
-
-/* Corner shapes are desktop only. */
-.bubble-menu__shape {
-  display: none;
-}
-
-/* Desktop open menu: links centred on the left, small wordmark at the top, the blue circle
-   (Shape3) in the bottom-left corner and the cream arch (Shape6) on the right with the
-   address on it. Both PNGs are 1000 × 1000 canvases with the shape centred. */
-@media (min-width: 769px) {
-  .bubble-menu__sphere {
-    display: none;
-  }
-
-  .bubble-menu__shape {
-    position: absolute;
-    z-index: 0;
-    display: block;
-    height: auto;
-    max-width: none;
-    pointer-events: none;
-    user-select: none;
-  }
-
-  /* Circle is 36% of its canvas. Centre just inside the bottom-left corner. */
-  .bubble-menu__shape--circle {
-    top: 95%;
-    left: 5svh;
-    width: 126svh;
-    translate: -50% -50%;
-  }
-
-  /* Shape6 and the address share one size, --arch-s (the PNG canvas), so the text always sits
-     inside the cream with the same margin on every screen. The arch fills x 25.7–74.3% and
-     y 5.1–94.9% of its canvas. 4% of the canvas runs past the right edge and 10% past the
-     bottom, so the visible cream is 44.6% of --arch-s wide. */
-  .bubble-menu {
-    /* Smallest size still fits the email line (15.35em of the mono at 0.8125rem) with margins. */
-    --arch-s: clamp(38rem, 80svh, 46rem);
-    --arch-visible-w: calc(var(--arch-s) * 0.446);
-    --arch-pad: calc(var(--arch-s) * 0.05);
-  }
-
-  .bubble-menu__shape--arch {
-    right: calc(var(--arch-s) * -0.297);
-    bottom: calc(var(--arch-s) * -0.151);
-    width: var(--arch-s);
-  }
-
-  .bubble-menu[open] .bubble-menu__shape {
-    animation: sphere-in 1s var(--bubble-ease) 0.2s both;
-  }
-
-  /* Small arched wordmark at the top centre. Its lettering sits at 42% of the image width. */
-  .bubble-menu__wordmark {
-    top: calc(1.75rem + var(--safe-top));
-    right: auto;
-    left: 50%;
-    width: 9rem;
-    height: auto;
-    translate: -42% 0;
-  }
-
-  .bubble-menu__content {
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100%;
-    padding: calc(6rem + var(--safe-top)) 0 calc(6rem + var(--safe-bottom))
-      calc(6rem + var(--safe-left));
-  }
-
-  .bubble-menu__links a::after {
-    content: none;
-  }
-
-  /* Address in the lower part of Shape6, where its sides are straight: same margin left,
-     right and below. */
-  .bubble-menu__info {
-    position: absolute;
-    right: var(--arch-pad);
-    bottom: calc(var(--arch-pad) + var(--safe-bottom));
-    width: calc(var(--arch-visible-w) - var(--arch-pad) * 2);
-    align-self: auto;
-    color: var(--bordeaux-profond);
-    font-size: 0.8125rem;
-    line-height: 1.75;
-  }
-
-  .bubble-menu__label {
-    margin-bottom: 0.75rem !important;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid rgb(122 0 0 / 0.25);
-    font-size: 0.875rem;
-    text-transform: lowercase;
-    opacity: 1;
-  }
-
-  .bubble-menu__info a {
-    border-bottom-color: rgb(122 0 0 / 0.3);
-  }
-
-  .bubble-menu__info a:hover,
-  .bubble-menu__info a:focus-visible {
-    border-color: currentColor;
-  }
 }
 
 /* Staggered reveal of the menu content */
@@ -495,11 +427,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .site-header__sphere,
   .menu-bubble,
   .bubble-menu[open],
   .bubble-menu.is-closing,
-  .bubble-menu[open] .bubble-menu__sphere,
   .bubble-menu[open] .bubble-menu__shape,
   .bubble-menu[open] .bubble-menu__wordmark,
   .bubble-menu[open] .bubble-menu__links li,

@@ -41,6 +41,16 @@
      is the same size wherever it appears. Follows the screen height, held back on narrow
      windows, and kept between 6px and 10px. */
   --shape-u: clamp(6px, min(1svh, 0.625vw), 10px);
+  /* One point of the menu PDF (595.5 × 841 pt): the screen height over 841, or on a
+     narrow screen its width over 595.5. The hero and the shapes down the page use the PDF's
+     own shapes at this scale, so they all match. */
+  --pdf: min(100svh / 841, 100vw / 595.5);
+
+  /* The red menu bubble (header.css), also the spot of the gallery viewer's close button:
+     64px on desktop, never under 52px, in from the corner. Safe areas are added on top. */
+  --bubble-size: clamp(3.25rem, 2.5rem + 2vw, 4rem);
+  --bubble-top: 0.625rem;
+  --bubble-right: clamp(1rem, 3vw, 2rem);
 }
 
 *,
@@ -99,8 +109,7 @@ main {
 }
 
 /* Section titles ("Galerie", "Le menu"): the same bordeaux oval (Shape2) as "À propos de
-   nous", at the same size, gap and height (about.css on desktop, mobile-style.css on a
-   phone). The wrapper is positioned and isolated so the oval sits behind its own title
+   nous", at the same size, gap and height (about.css). The wrapper is positioned and isolated so the oval sits behind its own title
    only. */
 .section-heading {
   position: relative;
@@ -123,9 +132,26 @@ main {
   user-select: none;
 }
 
+/* Subtitle directly under a section title, like the À propos one (about.css): same type,
+   and the same black rule under it, as wide as the À propos text column (30rem) on desktop. */
+.section-subtitle {
+  max-width: 30rem;
+  margin: 0.75rem 0 0;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--black);
+  font-family: var(--font-subtitle);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--bordeaux-profond);
+}
+
 /* Phone: the title is indented and the oval (canvas 4.6rem: 1.1 × 3.1rem) sits in the indent. */
 @media (max-width: 768px) {
-  .section-heading > :is(h1, h2) {
+  .section-subtitle {
+    max-width: none;
+  }
+
+  .section-heading :is(h1, h2) {
     padding-left: 1.85rem;
   }
 

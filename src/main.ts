@@ -4,9 +4,6 @@ import { createHero } from './components/hero';
 import { createAbout } from './components/about';
 import { createGallery } from './components/gallery';
 import { createFooter } from './components/footer';
-// Phone rules last: shared ones (header, menu sheet, footer), then the home page's own.
-import './mobile-layout.css';
-import './mobile-style.css';
 
 history.scrollRestoration = 'manual';
 
