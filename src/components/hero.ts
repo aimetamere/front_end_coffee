@@ -184,6 +184,9 @@ export function createHero(): HTMLElement {
 
 /** Share of the runway spent fading the wordmark before the arch starts to grow. */
 const FADE_SHARE = 0.15;
+/** Phones: how far into the hero a scroll must go to play the growth, and how long it plays. */
+const PHONE_TRIGGER_PX = 12;
+const PHONE_PLAY_MS = 1100;
 
 /** The arch grows to fill the pinned hero as the page scrolls through the runway.
  *
@@ -230,16 +233,11 @@ function mountArchGrowth(section: HTMLElement) {
     return true;
   };
 
-  const paint = () => {
-    frame = 0;
-    let fade = 0;
-    let grow = 0;
-    if (!reducedMotion.matches && runway > 0) {
-      const progress = clamp((stickTop - (sectionTop - window.scrollY)) / runway);
-      // The wordmark fades out first, with the arch at rest, so the growing photo never runs into the letters.
-      fade = clamp(progress / FADE_SHARE);
-      grow = clamp((progress - FADE_SHARE) / (1 - FADE_SHARE));
-    }
+  /** Draws the hero at `progress` (0 at rest, 1 grown to the full frame). */
+  const apply = (progress: number) => {
+    // The wordmark fades out first, with the arch at rest, so the growing photo never runs into the letters.
+    const fade = clamp(progress / FADE_SHARE);
+    const grow = clamp((progress - FADE_SHARE) / (1 - FADE_SHARE));
     // Cover scale for the arch at this size (as object-fit: cover would give it).
     const archH = archW * 1.25;
     const boxW = archW + (frameW - archW) * grow;
@@ -248,6 +246,57 @@ function mountArchGrowth(section: HTMLElement) {
     section.style.setProperty('--fade', fade.toFixed(4));
     section.style.setProperty('--grow', grow.toFixed(4));
     section.style.setProperty('--img-k', scale.toFixed(5));
+  };
+
+  // Phones: the scroll only decides the direction. A small scroll into the hero plays the
+  // whole growth as one smooth, timed animation (and back to the top plays it in reverse),
+  // instead of the photo following the finger across a long runway.
+  let shown = 0; // progress on screen
+  let target = 0;
+  let tween = 0;
+  let tweenFrom = 0;
+  let tweenStart = 0;
+  let tweenDuration = 0;
+  const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+
+  const step = (now: number) => {
+    const t = tweenDuration ? clamp((now - tweenStart) / tweenDuration) : 1;
+    shown = tweenFrom + (target - tweenFrom) * ease(t);
+    apply(shown);
+    tween = t < 1 ? requestAnimationFrame(step) : 0;
+  };
+
+  const playTo = (next: number) => {
+    if (next === target && (tween || shown === next)) return;
+    target = next;
+    tweenFrom = shown;
+    tweenStart = performance.now();
+    tweenDuration = PHONE_PLAY_MS * Math.abs(next - shown);
+    if (!tween) tween = requestAnimationFrame(step);
+  };
+
+  const stopTween = () => {
+    cancelAnimationFrame(tween);
+    tween = 0;
+  };
+
+  const paint = () => {
+    frame = 0;
+    if (reducedMotion.matches || runway <= 0) {
+      stopTween();
+      shown = target = 0;
+      apply(0);
+      return;
+    }
+    const scrolled = stickTop - (sectionTop - window.scrollY);
+    if (mobileQuery.matches) {
+      playTo(scrolled > PHONE_TRIGGER_PX ? 1 : 0);
+      if (!tween) apply(shown);
+      return;
+    }
+    stopTween();
+    shown = target = clamp(scrolled / runway);
+    apply(shown);
   };
 
   const schedule = () => {

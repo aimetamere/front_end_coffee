@@ -17,9 +17,9 @@
 .site-footer__inner {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 2.5rem 3rem;
-  padding: clamp(2.5rem, 5vw, 3.5rem) max(var(--footer-pad) + var(--safe-right), 50% - 39rem)
-    1.5rem max(var(--footer-pad) + var(--safe-left), 50% - 39rem);
+  gap: 1.75rem 3rem;
+  padding: clamp(1.75rem, 3.5vw, 2.5rem) max(var(--footer-pad) + var(--safe-right), 50% - 39rem)
+    1rem max(var(--footer-pad) + var(--safe-left), 50% - 39rem);
   background: var(--bordeaux-profond);
 }
 
@@ -27,7 +27,7 @@
 .site-footer__start {
   display: grid;
   align-content: start;
-  gap: 1.5rem;
+  gap: 1.1rem;
 }
 
 .site-footer__brand {
@@ -53,7 +53,7 @@
   display: block;
   width: 3rem;
   height: 1px;
-  margin-top: 1.25rem;
+  margin-top: 0.9rem;
   background: var(--creme);
 }
 
@@ -100,10 +100,10 @@
 .site-footer__info {
   display: grid;
   align-content: start;
-  gap: 1rem;
+  gap: 0.6rem;
   font-family: var(--font-body);
   font-size: 0.95rem;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 /* Phone and email: an icon in a small cream circle marks each as a link, with a full-size
@@ -111,14 +111,14 @@
 .site-footer__contact {
   display: grid;
   justify-items: start;
-  gap: 0.25rem;
+  gap: 0;
 }
 
 .site-footer__info a {
   display: inline-flex;
   align-items: center;
   gap: 0.7rem;
-  min-height: 2.75rem;
+  min-height: 2.5rem;
   color: inherit;
   font-weight: 600;
   text-decoration: none;
@@ -162,23 +162,73 @@
 
 /* Hours as in the open menu: three plain lines under one light rule. */
 .site-footer__hours {
-  margin-top: 0.25rem;
-  padding-top: 0.75rem;
+  margin-top: 0.15rem;
+  padding-top: 0.6rem;
   border-top: 1px solid var(--footer-rule);
   line-height: 1.5;
 }
 
-/* Bottom row: the copyright, then the legal links, smaller than the site links. */
+/* Closing group, centred under everything: the arched wordmark (a link home), a short
+   rule, then the copyright and the legal links on one row, smaller than the site links. */
 .site-footer__legal {
   grid-column: 1 / -1;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  gap: 0.5rem 1.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--footer-rule);
+  gap: 0.85rem;
+  margin-top: 0.25rem;
   font-family: var(--font-body);
   font-size: 0.8rem;
+  text-align: center;
+}
+
+/* The wordmark cropped to its letters: the PNG's opaque box is x 119–924, y 139–806 of
+   1094 × 962, so the frame is 7rem × (667/805 of that) and the image is shifted by the
+   empty margins. 5.5rem wide, so the footer stays slim. */
+.site-footer__legal .site-footer__mark {
+  --mark-w: min(5.5rem, 100%);
+
+  display: block;
+  width: var(--mark-w);
+  aspect-ratio: 805 / 667;
+  overflow: hidden;
+  padding: 0;
+  text-decoration: none;
+  border-radius: 0.25rem;
+  transition: opacity 0.25s;
+}
+
+.site-footer__mark img {
+  display: block;
+  width: calc(var(--mark-w) * 1094 / 805);
+  max-width: none;
+  height: auto;
+  margin: calc(var(--mark-w) * -139 / 805) 0 0 calc(var(--mark-w) * -119 / 805);
+}
+
+.site-footer__legal .site-footer__mark:hover {
+  opacity: 0.85;
+}
+
+.site-footer__legal .site-footer__mark:focus-visible {
+  outline: 2px solid var(--creme);
+  outline-offset: 0.4rem;
+}
+
+.site-footer__rule {
+  display: block;
+  width: 3rem;
+  height: 1px;
+  background: var(--creme);
+  opacity: 0.6;
+}
+
+.site-footer__legal-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
 }
 
 .site-footer__copy {
@@ -188,6 +238,7 @@
 .site-footer__legal ul {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 0.25rem 1.25rem;
   margin: 0;
   padding: 0;
@@ -214,7 +265,7 @@
 .site-footer__wave {
   display: block;
   width: 100%;
-  height: clamp(2.5rem, 6vw, 4.5rem);
+  height: clamp(1.75rem, 4vw, 3rem);
   margin-top: -1px;
   fill: var(--bordeaux-profond);
 }
@@ -225,8 +276,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.85rem;
-  padding: 0.75rem calc(var(--footer-pad) + var(--safe-right))
-    calc(1.75rem + var(--safe-bottom)) calc(var(--footer-pad) + var(--safe-left));
+  padding: 0.5rem calc(var(--footer-pad) + var(--safe-right))
+    calc(1.25rem + var(--safe-bottom)) calc(var(--footer-pad) + var(--safe-left));
   color: var(--bordeaux-profond);
 }
 
@@ -242,30 +293,27 @@
   gap: 0.5rem;
 }
 
-/* Phones: one column, one left edge. The top padding clears the sticky header (bar plus
-   notch) when the footer is scrolled up under it. The white band runs on under Safari's
+/* Phones: one column, one left edge. The white band runs on under Safari's
    toolbar, with the label and the button above it. */
 @media (max-width: 768px) {
   .site-footer__inner {
     grid-template-columns: minmax(0, 1fr);
-    gap: 2rem;
-    padding-top: calc(4.5rem + var(--safe-top));
+    gap: 1.5rem;
+    padding-top: calc(2.25rem + var(--safe-top));
   }
 
-  /* Copyright and legal links centred, one under the other. */
+  /* Same centred stack; the copyright above the legal links. */
   .site-footer__legal {
-    flex-direction: column;
-    gap: 0.5rem;
-    border-top: 0;
-    padding-top: 0;
-    text-align: center;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
   }
 
-  .site-footer__legal ul {
-    justify-content: center;
+  .site-footer__legal-row {
+    flex-direction: column;
+    gap: 0.35rem;
   }
 
   .site-footer__social {
-    padding-bottom: calc(1.75rem + var(--toolbar-h));
+    padding-bottom: calc(1.25rem + var(--toolbar-h));
   }
 }

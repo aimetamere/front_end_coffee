@@ -3,6 +3,7 @@ import { capAccent } from '../style/cap-accent';
 import { CAFE, HOURS, NAV_LINKS as links } from './cafe-info';
 import { tintBrowserBar } from './theme-color';
 import { contactIcons } from './contact-icons';
+import { mountPageTransition } from './page-transition';
 
 /** Moves on even if a menu animation never reports finishing (e.g. background tabs). */
 const ANIMATION_FALLBACK_MS = 900;
@@ -239,5 +240,6 @@ export function createHeader(): HTMLElement {
     if (menu.open) setOrigin();
   });
 
+  mountPageTransition();
   return header;
 }

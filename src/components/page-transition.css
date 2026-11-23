@@ -1,0 +1,54 @@
+/* Phones: the white veil with the loader between pages (page-transition.ts). A manual
+   popover, so it covers the open menu too, down under Safari's toolbar. */
+.page-veil {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100lvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--bg-color);
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}
+
+.page-veil:popover-open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* The visible screen's centre, not the large viewport's. */
+  padding-bottom: calc(100lvh - 100svh);
+}
+
+/* Fades in on the page that was tapped; already there on the page that opens. */
+@starting-style {
+  .page-veil:popover-open {
+    opacity: 0;
+  }
+}
+
+.page-veil.is-instant {
+  transition: none;
+}
+
+.page-veil.is-leaving {
+  opacity: 0;
+  transition-duration: 0.35s;
+}
+
+.page-veil::backdrop {
+  background: transparent;
+}
+
+.page-veil .loader {
+  --loader-size: 4rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-veil {
+    transition: none;
+  }
+}

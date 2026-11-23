@@ -1,6 +1,8 @@
 import { getDocument, GlobalWorkerOptions, type PDFPageProxy, type RenderTask } from 'pdfjs-dist';
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import './menu-viewer.css';
+import { fadeOutLoader, loaderHeld, loaderMarkup } from './loader';
+import { holdPageVeil, isPageVeiled } from './page-transition';
 
 GlobalWorkerOptions.workerSrc = workerUrl;
 
@@ -25,15 +27,17 @@ export function createMenuPage(): HTMLElement {
       <img class="section-heading__oval" src="/shapes/Shape2.png" alt="" aria-hidden="true" width="1000" height="1000" />
       <div class="menu-page__title-row">
         <h1 class="menu-page__title">Le menu</h1>
-        <a class="menu-download" href="${MENU_PDF}" download>
-          <span class="menu-download__text">Télécharger</span>
-          <span class="menu-download__icon">${downloadIcon}</span>
-        </a>
       </div>
       <p class="section-subtitle">Le menu de saison imaginé par notre chef Angelo.</p>
     </div>
+    <div class="menu-page__bar">
+      <a class="menu-download" href="${MENU_PDF}" download>
+        <span class="menu-download__text">Télécharger</span>
+        <span class="menu-download__icon">${downloadIcon}</span>
+      </a>
+    </div>
     <div class="menu-pdf" aria-label="Pages du menu">
-      <p class="menu-pdf__status" role="status">Chargement du menu…</p>
+      <div class="menu-pdf__status loader-host">${loaderMarkup('Chargement du menu')}</div>
     </div>
     <div class="menu-page__foot">
       <a class="menu-download" href="${MENU_PDF}" download>
@@ -59,6 +63,12 @@ type Sheet = {
 
 async function mountPdf(container: HTMLElement) {
   const status = container.querySelector<HTMLElement>('.menu-pdf__status')!;
+  const shownAt = performance.now();
+  // Opened under the page veil: the veil's loader covers this one, so no extra hold, and
+  // the veil stays until the first page has painted.
+  const veiled = isPageVeiled();
+  let firstPainted: () => void = () => {};
+  holdPageVeil(new Promise<void>((resolve) => (firstPainted = resolve)));
 
   let sheets: Sheet[];
   try {
@@ -79,10 +89,19 @@ async function mountPdf(container: HTMLElement) {
       return { page, frame, canvas, task: null, paintedAt: 0, visible: false };
     });
   } catch {
+    firstPainted();
+    if (!veiled) await loaderHeld(shownAt);
+    status.classList.remove('loader-host');
+    status.setAttribute('role', 'status');
     status.innerHTML = `Le menu n’a pas pu s’afficher. <a href="${MENU_PDF}" download>Télécharger le PDF</a>`;
     return;
   }
 
+  // The loader plays its minimum time, fades, then the pages take its place.
+  if (!veiled) {
+    await loaderHeld(shownAt);
+    await fadeOutLoader(status);
+  }
   status.remove();
   container.append(...sheets.map((sheet) => sheet.frame));
   // The pages just took their full height: a link to a section further down
@@ -114,6 +133,7 @@ async function mountPdf(container: HTMLElement) {
         sheet.canvas.getContext('2d')?.drawImage(next, 0, 0);
         sheet.paintedAt = target;
         sheet.frame.classList.add('is-painted');
+        firstPainted();
       })
       .catch(() => {
         // Cancelled by a newer paint of the same page.

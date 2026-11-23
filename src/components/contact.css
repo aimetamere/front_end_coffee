@@ -443,9 +443,13 @@
   }
 }
 
-/* Phones: lands under the sticky header bar. */
+/* Phones: where a link to the form lands. */
 @media (max-width: 768px) {
+  /* A link to #contact lands with the section's top at the very top of the screen, so the
+     cream fills the space behind the transparent header (no white strip from the page
+     above). The extra top padding keeps the title clear of the header. */
   .contact {
-    scroll-margin-top: calc(var(--safe-top) + 4.5rem);
+    padding-top: calc(var(--safe-top) + 6rem);
+    scroll-margin-top: 0;
   }
 }

@@ -253,6 +253,30 @@
   animation: gallery-swap 0.35s ease-out;
 }
 
+/* While a photo loads: it keeps the photo's place (the width and height attributes give
+   the ratio) but stays hidden, so the previous photo never lingers; the cream loader plays
+   in its centre. */
+.gallery-lightbox__stage.is-loading .gallery-lightbox__image {
+  width: min(100% - var(--strip-w) - var(--stage-gap), 70svh * 2000 / 1333);
+  opacity: 0;
+}
+
+.gallery-lightbox__loader {
+  position: fixed;
+  z-index: 1;
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+.gallery-lightbox__loader[hidden] {
+  display: none;
+}
+
+.gallery-lightbox__loader .loader {
+  --loader-size: 3.5rem;
+  --loader-color: var(--creme);
+}
+
 /* Vertical strip of every photo. Drag (or scroll) to move through it. */
 .gallery-lightbox__strip {
   display: flex;

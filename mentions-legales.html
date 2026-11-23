@@ -12,7 +12,16 @@
       html { background: #fff; }
       #app { min-height: 100vh; min-height: 100dvh; background: #fff; }
       @media (max-width: 768px) { body { background: transparent; } }
+      html.is-veiled body::after { content: ""; position: fixed; inset: 0; height: 100lvh; background: #fff; z-index: 2147483647; }
     </style>
+    <!-- Phones: a page opened from a navigation link starts under the white veil with the
+         loader (page-transition.ts), so the page renders out of sight. -->
+    <script>
+      try {
+        if (matchMedia('(max-width: 768px)').matches && sessionStorage.getItem('page-veil'))
+          document.documentElement.classList.add('is-veiled');
+      } catch (e) {}
+    </script>
     <title>Mentions légales · Café du Conservatoire</title>
     <meta name="description" content="Mentions légales du Café du Conservatoire, Genève." />
     <link rel="manifest" href="/manifest.webmanifest" />

@@ -13,12 +13,9 @@
 
 .menu-page__head {
   max-width: var(--menu-column);
-  margin: 0 auto clamp(1.5rem, 4vw, 2.5rem);
+  margin: 0 auto clamp(1rem, 3vw, 1.5rem);
 }
 
-/* "Le menu" with the download button just to its right, centred on the heading. The
-   button's large negative block margins keep it out of the row's height, so the row is
-   exactly as tall as the heading and the oval (placed from the top) stays level with it. */
 .menu-page__title-row {
   display: flex;
   align-items: center;
@@ -29,12 +26,12 @@
   white-space: nowrap;
 }
 
-/* Full size wherever it fits; on the narrowest phones it gives up a little width rather
-   than push the title onto two lines. */
-.menu-page__title-row .menu-download {
-  flex: 0 1 auto;
-  min-width: 9.5rem;
-  margin-block: -10rem;
+/* Download button on the right, just above the first page, at the column's right edge. */
+.menu-page__bar {
+  display: flex;
+  justify-content: flex-end;
+  max-width: var(--menu-column);
+  margin: 0 auto clamp(0.75rem, 2vw, 1rem);
 }
 
 .menu-page__title {
@@ -158,8 +155,10 @@
 }
 
 .menu-pdf__status {
+  display: flex;
+  justify-content: center;
   margin: 0;
-  padding: 3rem 0;
+  padding: clamp(3rem, 10vw, 6rem) 0;
   font-family: var(--font-body);
   text-align: center;
   color: rgb(0 0 0 / 0.6);
@@ -183,14 +182,10 @@
 }
 
 /* Phones: the sticky header bar is in the flow above the page, so only a small gap. The
-   download button leaves the title row and sits centred under the last page. */
+   download button also sits centred under the last page. */
 @media (max-width: 768px) {
   .menu-page {
     padding-top: clamp(1.5rem, 4vw, 2.5rem);
-  }
-
-  .menu-page__title-row .menu-download {
-    display: none;
   }
 
   .menu-page__foot {

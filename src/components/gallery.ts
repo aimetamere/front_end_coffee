@@ -1,5 +1,6 @@
 import './gallery.css';
 import { tintBrowserBar } from './theme-color';
+import { fadeOutLoader, loaderHeld, loaderMarkup } from './loader';
 
 /** Web-sized photos only; the full-size originals in public/photo/ start with "_". */
 const photos = [
@@ -62,6 +63,7 @@ export function createGallery(): HTMLElement {
       <button type="button" class="gallery-lightbox__close" aria-label="Fermer la photo"><span aria-hidden="true">×</span></button>
       <div class="gallery-lightbox__stage">
         <img class="gallery-lightbox__image" src="" alt="" width="${PHOTO_WIDTH}" height="${PHOTO_HEIGHT}" />
+        <span class="gallery-lightbox__loader loader-host" hidden>${loaderMarkup('Chargement de la photo')}</span>
         <div class="gallery-lightbox__strip" role="group" aria-label="Toutes les photos">
           ${photos
             .map(
@@ -83,17 +85,57 @@ export function createGallery(): HTMLElement {
   const thumbs = [...strip.querySelectorAll<HTMLButtonElement>('.gallery-lightbox__thumb')];
   const closeButton = lightbox.querySelector<HTMLButtonElement>('.gallery-lightbox__close')!;
 
+  const loader = lightbox.querySelector<HTMLElement>('.gallery-lightbox__loader')!;
   let current = 0;
+
+  // Replays the photo's fade-in.
+  const replaySwap = () => {
+    large.classList.remove('is-swapping');
+    void large.offsetWidth;
+    large.classList.add('is-swapping');
+  };
+
+  // A photo not loaded yet: its frame keeps the photo's size, the loader plays over it for
+  // at least its minimum time, then fades and the photo fades in. Each swap bumps the
+  // token, so a slow photo the visitor already left never takes over.
+  let loadToken = 0;
+
+  const placeLoader = () => {
+    const rect = large.getBoundingClientRect();
+    loader.style.left = `${rect.left + rect.width / 2}px`;
+    loader.style.top = `${rect.top + rect.height / 2}px`;
+  };
+
+  const settleLoading = async (token: number, shownAt: number) => {
+    await loaderHeld(shownAt);
+    if (token !== loadToken) return;
+    await fadeOutLoader(loader);
+    if (token !== loadToken) return;
+    loader.hidden = true;
+    stage.classList.remove('is-loading');
+    replaySwap();
+  };
 
   const show = (index: number) => {
     current = index;
     const photo = photos[index];
+    const token = ++loadToken;
     large.src = photo.src;
     large.alt = photo.alt;
-    // Replays the fade on each swap.
-    large.classList.remove('is-swapping');
-    void large.offsetWidth;
-    large.classList.add('is-swapping');
+    if (large.complete && large.naturalWidth) {
+      loader.hidden = true;
+      stage.classList.remove('is-loading');
+      replaySwap();
+    } else {
+      const shownAt = performance.now();
+      stage.classList.add('is-loading');
+      loader.classList.remove('is-leaving');
+      loader.hidden = false;
+      requestAnimationFrame(placeLoader);
+      const done = () => settleLoading(token, shownAt);
+      large.addEventListener('load', done, { once: true });
+      large.addEventListener('error', done, { once: true });
+    }
     thumbs.forEach((thumb, i) => {
       const active = i === index;
       thumb.classList.toggle('is-active', active);
@@ -146,6 +188,9 @@ export function createGallery(): HTMLElement {
   };
 
   lightbox.addEventListener('close', () => {
+    loadToken++;
+    loader.hidden = true;
+    stage.classList.remove('is-loading');
     unlockPage();
     restoreBar?.();
     restoreBar = null;
@@ -157,6 +202,10 @@ export function createGallery(): HTMLElement {
   });
 
   closeButton.addEventListener('click', close);
+
+  window.addEventListener('resize', () => {
+    if (!loader.hidden) placeLoader();
+  });
 
   // The backdrop is the dialog itself and the empty space of the stage around the photo.
   lightbox.addEventListener('click', (event) => {

@@ -34,10 +34,16 @@ export function createFooter(): HTMLElement {
         <p class="site-footer__hours">${HOURS.join('<br />')}</p>
       </div>
       <div class="site-footer__legal">
-        <p class="site-footer__copy">© ${new Date().getFullYear()} Café du Conservatoire</p>
-        <ul aria-label="Informations légales">
-          ${LEGAL_LINKS.map((link) => `<li><a href="${link.href}">${link.label}</a></li>`).join('')}
-        </ul>
+        <a class="site-footer__mark" href="/" aria-label="Café du Conservatoire, accueil">
+          <img src="/logo-og.png" alt="" width="1094" height="962" loading="lazy" />
+        </a>
+        <span class="site-footer__rule" aria-hidden="true"></span>
+        <div class="site-footer__legal-row">
+          <p class="site-footer__copy">© ${new Date().getFullYear()} Café du Conservatoire</p>
+          <ul aria-label="Informations légales">
+            ${LEGAL_LINKS.map((link) => `<li><a href="${link.href}">${link.label}</a></li>`).join('')}
+          </ul>
+        </div>
       </div>
     </div>
     <svg class="site-footer__wave" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true">

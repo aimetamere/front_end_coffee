@@ -296,6 +296,10 @@
     /* Height left over around the arch and its letters, a bit more of it below. */
     --hero-free: calc(var(--stage-h) - var(--arch-w) * 1.45);
     --arch-lift: max(1rem, var(--hero-free) * 0.52);
+
+    /* Short runway: a small scroll plays the growth as a timed animation (hero.ts), so the
+       frame only stays pinned a little while it finishes. */
+    height: calc(var(--stage-h) + 4.5rem + var(--safe-top) + 35svh);
   }
 
   /* Shapes whole on phones: each PNG is scaled so its opaque body fits the band above or
