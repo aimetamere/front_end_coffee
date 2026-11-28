@@ -185,12 +185,15 @@
 /* The wordmark cropped to its letters: the PNG's opaque box is x 119–924, y 139–806 of
    1094 × 962, so the frame is 7rem × (667/805 of that) and the image is shifted by the
    empty margins. 5.5rem wide, so the footer stays slim. */
+/* The arch's letters, cropped out of logo1_normal.png: the canvas is 1475 × 1820 and the
+   letters span x 145–1282, y 198–1651 (1137 × 1453), a tall arch sized by its height. */
 .site-footer__legal .site-footer__mark {
-  --mark-w: min(5.5rem, 100%);
+  --mark-h: 5rem;
+  --mark-w: calc(var(--mark-h) * 1137 / 1453);
 
   display: block;
   width: var(--mark-w);
-  aspect-ratio: 805 / 667;
+  height: var(--mark-h);
   overflow: hidden;
   padding: 0;
   text-decoration: none;
@@ -200,10 +203,10 @@
 
 .site-footer__mark img {
   display: block;
-  width: calc(var(--mark-w) * 1094 / 805);
+  width: calc(var(--mark-w) * 1475 / 1137);
   max-width: none;
   height: auto;
-  margin: calc(var(--mark-w) * -139 / 805) 0 0 calc(var(--mark-w) * -119 / 805);
+  margin: calc(var(--mark-w) * -198 / 1137) 0 0 calc(var(--mark-w) * -145 / 1137);
 }
 
 .site-footer__legal .site-footer__mark:hover {

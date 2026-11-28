@@ -30,7 +30,12 @@ export function createHeader(): HTMLElement {
     <svg class="site-header__lip" viewBox="0 0 120 80" aria-hidden="true">
       <path d="M-2000 -100H140V64H48A20 20 0 0 1 28 44V22A16 16 0 0 0 12 6H-2000Z" />
     </svg>
-    <a class="site-header__logo" href="/">Café du Conservatoire</a>
+    <a class="site-header__logo" href="/" aria-label="Café du Conservatoire, accueil">
+      <span class="site-header__logo-text">Café du Conservatoire</span>
+      <span class="site-header__logo-mark" aria-hidden="true">
+        <img src="/Logo%20conservatoire/logo1_normal.png" alt="" width="1475" height="1820" />
+      </span>
+    </a>
     <button
       type="button"
       class="menu-bubble"
@@ -46,9 +51,9 @@ export function createHeader(): HTMLElement {
       <img class="bubble-menu__shape bubble-menu__shape--circle" src="/shapes/Shape3.png" alt="" aria-hidden="true" width="1000" height="1000" />
       <img class="bubble-menu__shape bubble-menu__shape--arch" src="/shapes/Shape6.png" alt="" aria-hidden="true" width="1000" height="1000" />
       <span class="bubble-menu__sphere" aria-hidden="true">
-        <img class="bubble-menu__mark" src="/logo-og.png" alt="" />
+        <img class="bubble-menu__mark" src="/Logo%20conservatoire/logo1_normal.png" alt="" width="1475" height="1820" />
       </span>
-      <img class="bubble-menu__wordmark" src="/logo-og.png" alt="" aria-hidden="true" />
+      <img class="bubble-menu__wordmark" src="/Logo%20conservatoire/logo1_normal.png" alt="" aria-hidden="true" width="1475" height="1820" />
       <button type="button" class="bubble-menu__close" aria-label="Fermer le menu">${burger}</button>
       <div class="bubble-menu__content">
         <nav aria-label="Navigation principale">
@@ -188,6 +193,16 @@ export function createHeader(): HTMLElement {
   // the bar is transparent). In development the styles also arrive after that first
   // paint. So once the page is ready, the menu's page lock is held for a moment and
   // released, then the page scrolls 1px and back: invisible, and Safari looks again.
+  // A page opened on a section (/menu.html#contact) may grow above it while locked (the
+  // menu PDF's pages arrive), so unlocking lands on that section again rather than on the
+  // old offset, unless the visitor has already scrolled on their own.
+  let touched = false;
+  const markTouched = () => {
+    touched = true;
+  };
+  window.addEventListener('touchstart', markTouched, { once: true, passive: true });
+  window.addEventListener('wheel', markTouched, { once: true, passive: true });
+
   const refreshBrowserBar = () => {
     if (!mobileQuery.matches || menu.open) return;
     window.setTimeout(() => {
@@ -196,6 +211,8 @@ export function createHeader(): HTMLElement {
       window.setTimeout(() => {
         if (menu.open) return;
         unlockPage();
+        const section = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+        if (section && !touched) section.scrollIntoView();
         const y = window.scrollY;
         window.scrollTo(0, y + 1);
         requestAnimationFrame(() => window.scrollTo(0, y));
@@ -241,5 +258,34 @@ export function createHeader(): HTMLElement {
   });
 
   mountPageTransition();
+  // The footer exists once the page has appended it after the header.
+  queueMicrotask(() => mountFooterSeam(header));
   return header;
+}
+
+/** Phones: the footer is the header's bordeaux, so while it runs under the header the
+ *  header gets a soft shadow along its bottom (header.css) to keep the edge. The observer's
+ *  root is the band the header covers at the top of the screen. */
+function mountFooterSeam(header: HTMLElement) {
+  const footer = document.querySelector<HTMLElement>('.site-footer');
+  if (!footer) return;
+
+  let observer: IntersectionObserver | null = null;
+  let band = -1;
+
+  const observe = () => {
+    const height = header.offsetHeight;
+    const next = Math.max(0, window.innerHeight - height);
+    if (next === band) return;
+    band = next;
+    observer?.disconnect();
+    observer = new IntersectionObserver(
+      ([entry]) => header.classList.toggle('is-over-footer', entry.isIntersecting),
+      { rootMargin: `0px 0px -${band}px 0px` },
+    );
+    observer.observe(footer);
+  };
+
+  observe();
+  window.addEventListener('resize', observe);
 }

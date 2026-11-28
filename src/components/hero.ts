@@ -184,9 +184,18 @@ export function createHero(): HTMLElement {
 
 /** Share of the runway spent fading the wordmark before the arch starts to grow. */
 const FADE_SHARE = 0.15;
-/** Phones: how far into the hero a scroll must go to play the growth, and how long it plays. */
-const PHONE_TRIGGER_PX = 12;
-const PHONE_PLAY_MS = 1100;
+/** Phones: the wordmark is gone by this share of the growth, fading while the arch widens. */
+const PHONE_FADE_END = 0.4;
+/** Phones: once the finger lifts, a gesture that went (or is flung) past this share of the
+ *  hero settles at the far end; anything less settles back where it started. */
+const PHONE_SETTLE_THRESHOLD = 1 / 3;
+/** Phones: how far the release speed carries the gesture (ms of travel at that speed). */
+const PHONE_FLING_MS = 220;
+/** Phones: finger travel, as a share of the screen height, that plays the whole hero. */
+const PHONE_DRAG_SHARE = 0.6;
+/** Phones: the settle ease takes this long for the whole hero (less for part of it). */
+const PHONE_SETTLE_MS = 600;
+const PHONE_SETTLE_MIN_MS = 300;
 
 /** The arch grows to fill the pinned hero as the page scrolls through the runway.
  *
@@ -235,9 +244,17 @@ function mountArchGrowth(section: HTMLElement) {
 
   /** Draws the hero at `progress` (0 at rest, 1 grown to the full frame). */
   const apply = (progress: number) => {
-    // The wordmark fades out first, with the arch at rest, so the growing photo never runs into the letters.
-    const fade = clamp(progress / FADE_SHARE);
-    const grow = clamp((progress - FADE_SHARE) / (1 - FADE_SHARE));
+    let fade: number;
+    let grow: number;
+    if (mobileQuery.matches) {
+      // Phones: one motion. The letters fade out while the arch starts to widen.
+      fade = clamp(progress / PHONE_FADE_END);
+      grow = clamp(progress);
+    } else {
+      // The wordmark fades out first, with the arch at rest, so the growing photo never runs into the letters.
+      fade = clamp(progress / FADE_SHARE);
+      grow = clamp((progress - FADE_SHARE) / (1 - FADE_SHARE));
+    }
     // Cover scale for the arch at this size (as object-fit: cover would give it).
     const archH = archW * 1.25;
     const boxW = archW + (frameW - archW) * grow;
@@ -248,60 +265,238 @@ function mountArchGrowth(section: HTMLElement) {
     section.style.setProperty('--img-k', scale.toFixed(5));
   };
 
-  // Phones: the scroll only decides the direction. A small scroll into the hero plays the
-  // whole growth as one smooth, timed animation (and back to the top plays it in reverse),
-  // instead of the photo following the finger across a long runway.
+  /** Page scroll at which the hero shows `progress`. */
+  const scrollFor = (progress: number) => sectionTop - stickTop + runway * progress;
+  /** Progress from the page scroll, snapped to 0 or 1 within a hair (fractional scroll). */
+  const progressNow = () => {
+    if (runway <= 0) return 0;
+    const progress = clamp((window.scrollY - scrollFor(0)) / runway);
+    return progress < 0.002 ? 0 : progress > 0.998 ? 1 : progress;
+  };
+
+  /*
+   * Phones: one gesture plays the whole hero, and the page leads it home.
+   *
+   * A touch that starts on the hero and moves into it (forward at rest, back when full-bleed,
+   * either way mid-motion) is taken over on its first move: the browser never starts its own
+   * scroll, so no momentum ever fights the motion. The finger drives the progress and the
+   * page scroll together; on release the hero eases to 0 or 1 starting at the finger's own
+   * speed, so there is no jolt when the finger lifts. A scroll the browser does own (one
+   * that started below the hero and runs up into it) is stopped as it enters, and eased the
+   * same way. The hero never rests between 0 and 1.
+   */
+  const phoneMode = () => mobileQuery.matches && !reducedMotion.matches && runway > 0;
+  const pageLocked = () =>
+    document.body.style.position === 'fixed' || document.documentElement.classList.contains('is-menu-open');
+
+  type Settle = { from: number; to: number; slope: number; start: number; duration: number };
+  let mode: 'idle' | 'pending' | 'drag' | 'native' | 'settle' = 'idle';
+  let settle: Settle | null = null;
+  let settledAt = 0; // the side the hero last came to rest on
   let shown = 0; // progress on screen
-  let target = 0;
-  let tween = 0;
-  let tweenFrom = 0;
-  let tweenStart = 0;
-  let tweenDuration = 0;
-  const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+  let dragFrom = 0; // progress when the drag took over
+  let dragTo = 0; // progress the finger asks for
+  let startX = 0;
+  let startY = 0;
+  let resumeTo: number | null = null; // a settle a touch interrupted, resumed if the touch is only a tap
+  let samples: { p: number; t: number }[] = []; // recent drag progress, for the release speed
+  let lastScrollY = 0;
+  let lastScrollT = 0;
+  let scrollSpeed = 0; // native scroll, progress per ms, positive opening
+  let momentumStopped = false;
 
-  const step = (now: number) => {
-    const t = tweenDuration ? clamp((now - tweenStart) / tweenDuration) : 1;
-    shown = tweenFrom + (target - tweenFrom) * ease(t);
-    apply(shown);
-    tween = t < 1 ? requestAnimationFrame(step) : 0;
+  const stopMomentum = () => {
+    if (momentumStopped) return;
+    momentumStopped = true;
+    document.documentElement.style.overflow = 'hidden';
+  };
+  const releaseMomentum = () => {
+    if (!momentumStopped) return;
+    momentumStopped = false;
+    if (!pageLocked()) document.documentElement.style.overflow = '';
   };
 
-  const playTo = (next: number) => {
-    if (next === target && (tween || shown === next)) return;
-    target = next;
-    tweenFrom = shown;
-    tweenStart = performance.now();
-    tweenDuration = PHONE_PLAY_MS * Math.abs(next - shown);
-    if (!tween) tween = requestAnimationFrame(step);
+  /** Eases from what is on screen to `to`, leaving at `speed` (progress per ms) when it
+   *  points the same way, never overshooting. */
+  const settleTo = (to: number, speed: number) => {
+    const from = shown;
+    const distance = to - from;
+    settledAt = to;
+    if (Math.abs(distance) < 0.001) {
+      settle = null;
+      mode = 'idle';
+      shown = to;
+      window.scrollTo(0, scrollFor(to));
+      apply(to);
+      releaseMomentum();
+      return;
+    }
+    let duration = Math.max(PHONE_SETTLE_MIN_MS, PHONE_SETTLE_MS * Math.sqrt(Math.abs(distance)));
+    let slope = Math.sign(speed) === Math.sign(distance) ? speed * duration : 0;
+    // A fast release finishes sooner, so the ease still leaves at the finger's speed.
+    if (Math.abs(slope) > 3 * Math.abs(distance)) {
+      duration = Math.max(PHONE_SETTLE_MIN_MS, (3 * Math.abs(distance)) / Math.abs(speed));
+      slope = Math.sign(distance) * Math.min(Math.abs(speed) * duration, 3 * Math.abs(distance));
+    }
+    settle = { from, to, slope, start: performance.now(), duration };
+    mode = 'settle';
+    schedule();
   };
 
-  const stopTween = () => {
-    cancelAnimationFrame(tween);
-    tween = 0;
+  /** Where a release lands: past the threshold from the side it started on, the other side. */
+  const landing = (progress: number, speed: number, startSide: number) => {
+    const flung = progress + speed * PHONE_FLING_MS;
+    return startSide === 0 ? (flung > PHONE_SETTLE_THRESHOLD ? 1 : 0) : 1 - flung > PHONE_SETTLE_THRESHOLD ? 0 : 1;
   };
 
   const paint = () => {
     frame = 0;
     if (reducedMotion.matches || runway <= 0) {
-      stopTween();
-      shown = target = 0;
+      settle = null;
+      mode = 'idle';
+      shown = 0;
       apply(0);
       return;
     }
-    const scrolled = stickTop - (sectionTop - window.scrollY);
-    if (mobileQuery.matches) {
-      playTo(scrolled > PHONE_TRIGGER_PX ? 1 : 0);
-      if (!tween) apply(shown);
+    if (mode === 'settle' && settle) {
+      const { from, to, slope, start, duration } = settle;
+      const t = clamp((performance.now() - start) / duration);
+      // Cubic Hermite: leaves at `slope`, arrives at rest, stays between from and to.
+      shown = from + (to - from) * (3 * t * t - 2 * t * t * t) + slope * (t * t * t - 2 * t * t + t);
+      if (t >= 1) shown = to;
+      window.scrollTo(0, scrollFor(shown));
+      apply(shown);
+      if (t < 1) {
+        schedule();
+      } else {
+        settle = null;
+        mode = 'idle';
+        releaseMomentum();
+      }
       return;
     }
-    stopTween();
-    shown = target = clamp(scrolled / runway);
+    if (mode === 'drag') {
+      shown = dragTo;
+      window.scrollTo(0, scrollFor(shown));
+      apply(shown);
+      return;
+    }
+    shown = progressNow();
     apply(shown);
   };
 
   const schedule = () => {
     if (!frame) frame = requestAnimationFrame(paint);
   };
+
+  const onScroll = () => {
+    // The drag and the settle move the page themselves.
+    if (mode === 'drag' || mode === 'settle') return;
+    const now = performance.now();
+    const dt = now - lastScrollT;
+    if (dt > 0 && dt < 100 && runway > 0) scrollSpeed = (window.scrollY - lastScrollY) / runway / dt;
+    else scrollSpeed = 0;
+    lastScrollY = window.scrollY;
+    lastScrollT = now;
+    if (!active) return;
+    schedule();
+    if (!phoneMode() || pageLocked() || mode === 'native' || mode === 'pending') return;
+    // No finger down, yet the page is inside the hero (momentum running in from below, or the
+    // keyboard): stop it there and lead it home in the direction it was going.
+    const progress = progressNow();
+    if (progress > 0 && progress < 1) {
+      stopMomentum();
+      shown = progress;
+      settleTo(scrollSpeed < 0 ? 0 : scrollSpeed > 0 ? 1 : settledAt, scrollSpeed);
+    }
+  };
+
+  window.addEventListener(
+    'touchstart',
+    (event) => {
+      if (!phoneMode() || pageLocked() || event.touches.length > 1) {
+        if (mode === 'pending' || mode === 'drag') mode = 'idle';
+        return;
+      }
+      releaseMomentum();
+      resumeTo = null;
+      if (mode === 'settle') {
+        // A new finger takes over a running settle where it is.
+        resumeTo = settle?.to ?? null;
+        settle = null;
+      } else {
+        shown = progressNow();
+      }
+      mode = 'pending';
+      startX = event.touches[0].clientX;
+      startY = event.touches[0].clientY;
+    },
+    { passive: true },
+  );
+
+  window.addEventListener(
+    'touchmove',
+    (event) => {
+      if (mode !== 'pending' && mode !== 'drag') return;
+      const touch = event.touches[0];
+      if (mode === 'pending') {
+        const dx = touch.clientX - startX;
+        const dy = touch.clientY - startY;
+        if (!dy || Math.abs(dx) > Math.abs(dy)) return;
+        const forward = dy < 0; // finger up, page forward, hero opening
+        const midway = shown > 0 && shown < 1;
+        const atRest = shown === 0 && window.scrollY <= scrollFor(0) + 2;
+        const atFull = shown === 1 && Math.abs(window.scrollY - scrollFor(1)) <= 2;
+        if (!event.cancelable || !(midway || (atRest && forward) || (atFull && !forward))) {
+          // The browser scrolls this one (the page above the hero, or on into the next section).
+          mode = 'native';
+          return;
+        }
+        mode = 'drag';
+        dragFrom = shown;
+        dragTo = shown;
+        startY = touch.clientY;
+        samples = [{ p: shown, t: event.timeStamp }];
+      }
+      if (event.cancelable) event.preventDefault();
+      const travel = window.innerHeight * PHONE_DRAG_SHARE;
+      dragTo = clamp(dragFrom + (startY - touch.clientY) / travel);
+      samples.push({ p: dragTo, t: event.timeStamp });
+      while (samples.length > 2 && event.timeStamp - samples[0].t > 100) samples.shift();
+      schedule();
+    },
+    { passive: false },
+  );
+
+  const onTouchEnd = (event: TouchEvent) => {
+    if (event.touches.length) return;
+    const was = mode;
+    if (was === 'drag') {
+      const first = samples[0];
+      const last = samples[samples.length - 1];
+      const age = event.timeStamp - last.t;
+      // A finger held still before lifting has no speed left.
+      const speed = last.t > first.t && age < 80 ? (last.p - first.p) / (last.t - first.t) : 0;
+      shown = dragTo;
+      settleTo(landing(dragTo, speed, Math.round(dragFrom)), speed);
+    } else if (was === 'pending') {
+      // A tap: a settle it interrupted carries on.
+      if (resumeTo !== null) settleTo(resumeTo, 0);
+      else mode = 'idle';
+    } else if (was === 'native') {
+      mode = 'idle';
+      const progress = progressNow();
+      if (phoneMode() && progress > 0 && progress < 1) {
+        // Dragged up into the hero from below: stop the momentum and lead it home.
+        stopMomentum();
+        shown = progress;
+        settleTo(landing(progress, scrollSpeed, 1), scrollSpeed);
+      }
+    }
+    resumeTo = null;
+  };
+  window.addEventListener('touchend', onTouchEnd, { passive: true });
+  window.addEventListener('touchcancel', onTouchEnd, { passive: true });
 
   const remeasure = () => {
     if (measure()) schedule();
@@ -316,7 +511,7 @@ function mountArchGrowth(section: HTMLElement) {
   // Sizes change with the window, the toolbar-independent svh frame, fonts and the image.
   new ResizeObserver(remeasure).observe(sticky);
   new ResizeObserver(remeasure).observe(section);
-  window.addEventListener('scroll', () => active && schedule(), { passive: true });
+  window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', remeasure);
   window.addEventListener('load', remeasure);
   image.addEventListener('load', remeasure);

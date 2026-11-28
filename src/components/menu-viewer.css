@@ -176,6 +176,14 @@
   }
 }
 
+/* Desktop windows narrow enough for the title to reach the left edge: it starts below the
+   home disc in the corner (header.css: the disc is 4 bubbles wide, 58% of it on screen). */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .site-header--home-link ~ main .menu-page {
+    padding-top: calc(var(--safe-top) + var(--bubble-size) * 4 * 0.58 + clamp(1.5rem, 4vw, 2.5rem));
+  }
+}
+
 /* Download button under the pages: phones only. */
 .menu-page__foot {
   display: none;
@@ -186,6 +194,11 @@
 @media (max-width: 768px) {
   .menu-page {
     padding-top: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  /* Only the button under the pages on phones. */
+  .menu-page__bar {
+    display: none;
   }
 
   .menu-page__foot {

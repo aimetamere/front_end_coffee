@@ -43,7 +43,7 @@ export function createFooter(): HTMLElement {
       </div>
       <div class="site-footer__legal">
         <a class="site-footer__mark" href="/" aria-label="Café du Conservatoire, accueil">
-          <img src="/logo-og.png" alt="" width="1094" height="962" loading="lazy" />
+          <img src="/Logo%20conservatoire/logo1_normal.png" alt="" width="1475" height="1820" loading="lazy" />
         </a>
         <span class="site-footer__rule" aria-hidden="true"></span>
         <div class="site-footer__legal-row">
