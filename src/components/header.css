@@ -10,9 +10,78 @@
 }
 
 .site-header__lip,
-.site-header__logo,
 .bubble-menu__sphere {
   display: none;
+}
+
+/* Desktop, menu page only (.site-header--home-link): the home link is a red disc that
+   sticks out of the top-left corner, most of it off screen, with the arched logo in the
+   part that shows. Same red and shadow as the menu bubble. Phones restyle it as the blue
+   pill with the name (end of this file). */
+.site-header__logo {
+  display: none;
+}
+
+.site-header--home-link .site-header__logo {
+  /* The disc, and how far it sits past the top and left edges. */
+  --disc: calc(var(--bubble-size) * 4);
+  --disc-out: calc(var(--disc) * 0.42);
+  /* The cream arch, cropped out of logo1_normal.png: the canvas is 1475 × 1820 and the
+     letters span x 145–1282, y 198–1651 (1137 × 1453), a tall arch sized by its height. */
+  --mark-h: calc(var(--bubble-size) * 1.3);
+  --mark-w: calc(var(--mark-h) * 1137 / 1453);
+
+  position: fixed;
+  top: calc(var(--safe-top) - var(--disc-out));
+  left: calc(var(--safe-left) - var(--disc-out));
+  z-index: 50;
+  display: block;
+  width: var(--disc);
+  height: var(--disc);
+  border-radius: 50%;
+  background: var(--bordeaux-profond);
+  box-shadow: 0 10px 30px rgb(122 0 0 / 0.35);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.5s var(--bubble-ease),
+    box-shadow 0.5s var(--bubble-ease);
+  animation: sphere-in 1.2s var(--bubble-ease) 0.15s backwards;
+}
+
+.site-header__logo-text {
+  display: none;
+}
+
+/* Centred in the part of the disc on screen (between the edges and its round rim). */
+.site-header__logo-mark {
+  position: absolute;
+  top: calc(var(--disc) * 0.64 - var(--mark-h) / 2);
+  left: calc(var(--disc) * 0.64 - var(--mark-w) / 2);
+  display: block;
+  width: var(--mark-w);
+  height: var(--mark-h);
+  overflow: hidden;
+}
+
+.site-header__logo-mark img {
+  display: block;
+  width: calc(var(--mark-w) * 1475 / 1137);
+  max-width: none;
+  height: auto;
+  margin: calc(var(--mark-w) * -198 / 1137) 0 0 calc(var(--mark-w) * -145 / 1137);
+}
+
+@media (hover: hover) and (min-width: 769px) {
+  .site-header--home-link .site-header__logo:hover {
+    transform: scale(1.08);
+    box-shadow: 0 14px 40px rgb(122 0 0 / 0.45);
+  }
+}
+
+.site-header__logo:focus-visible {
+  outline: 2px solid var(--bordeaux-profond);
+  outline-offset: 4px;
 }
 
 /* Red menu bubble, fixed so the menu is always one tap away. Its size and spot are shared
@@ -248,9 +317,11 @@ html.is-menu-open {
   top: calc(1.75rem + var(--safe-top));
   left: 50%;
   display: block;
-  width: clamp(6.5rem, 20vw, 9rem);
+  /* logo1_normal.png: the letters span x 145–1282, y 198–1651 of 1475 × 1820, so they
+     are centred at 48.4% of the image's width. */
+  width: clamp(4.6rem, 14vw, 6.35rem);
   height: auto;
-  translate: -42% 0;
+  translate: -48.4% 0;
   pointer-events: none;
 }
 
@@ -453,6 +524,7 @@ html.is-menu-open {
 
 @media (prefers-reduced-motion: reduce) {
   .menu-bubble,
+  .site-header__logo,
   .bubble-menu[open],
   .bubble-menu.is-closing,
   .bubble-menu[open] .bubble-menu__shape,
@@ -486,6 +558,13 @@ html.is-menu-open {
     padding-right: calc(92px + 1rem + var(--safe-right));
     /* No bar colour: the page shows around the pill as it scrolls under it. */
     background: transparent;
+    transition: box-shadow 0.25s ease;
+  }
+
+  /* Over the footer (same bordeaux), a soft shadow under the header keeps its edge. The
+     shadow draws outside the box, so the header itself stays transparent. */
+  .site-header.is-over-footer {
+    box-shadow: 0 8px 16px rgb(0 0 0 / 0.28);
   }
 
   /* Red strip under the status bar, so it reads as one with the tab. */
@@ -518,11 +597,19 @@ html.is-menu-open {
     pointer-events: none;
   }
 
-  /* Pill flush with the left edge, the name in cream inside it */
-  .site-header__logo {
+  /* Pill flush with the left edge, the name in cream inside it, on every page (the
+     desktop corner disc undone; .site-header raises it over .site-header--home-link). */
+  .site-header .site-header__logo {
     position: relative;
+    top: auto;
+    left: auto;
     z-index: 1;
     display: inline-flex;
+    width: auto;
+    height: auto;
+    box-shadow: none;
+    transition: none;
+    animation: none;
     align-items: center;
     min-width: 0;
     padding: 0.6rem 1.25rem 0.6rem calc(1rem + var(--safe-left));
@@ -536,6 +623,14 @@ html.is-menu-open {
     text-decoration: none;
     white-space: nowrap;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  .site-header__logo-text {
+    display: inline;
+  }
+
+  .site-header__logo-mark {
+    display: none;
   }
 
   /* Fills the red tab drawn by the lip */
@@ -654,26 +749,27 @@ html.is-menu-open {
     display: none;
   }
 
-  /* Small arched logo centred at the top. The image has empty margins around the
-     lettering, and the lettering sits slightly left of the image's centre. */
+  /* Small arched logo centred at the top. logo1_normal.png has margins around the
+     lettering (x 145–1282, y 198–1651 of 1475 × 1820): the letters are centred at 48.4%
+     of its width and start 13.4% of its width below its top. */
   .bubble-menu__sphere {
+    --sphere-w: 3.35rem;
+
     position: absolute;
-    top: calc(var(--safe-top) - 0.25rem);
-    left: calc(50% - 3.25rem);
+    top: calc(var(--safe-top) + 0.5rem - var(--sphere-w) * 0.134);
+    left: calc(50% - var(--sphere-w) * 0.484);
     display: block;
-    width: 6.8rem;
-    aspect-ratio: 1094 / 962;
+    width: var(--sphere-w);
+    aspect-ratio: 1475 / 1820;
     pointer-events: none;
   }
 
   .bubble-menu__mark {
     position: absolute;
-    top: 0;
-    left: 10%;
+    inset: 0;
     display: block;
-    width: 70%;
-    height: 70%;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
   }
 
   /* One column on one left edge: the links, then the address and hours under them. */
@@ -767,6 +863,11 @@ html.is-menu-open {
     .bubble-menu[open] .bubble-menu__links li,
     .bubble-menu[open] .bubble-menu__info {
       animation: none;
+    }
+
+    /* The footer seam still shows, it just switches on without fading. */
+    .site-header {
+      transition: none;
     }
   }
 }
