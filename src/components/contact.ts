@@ -1,7 +1,6 @@
 import './contact.css';
 import { CAFE, HOURS } from './cafe-info';
-
-const EMAIL = CAFE.email;
+import { escapeHtml, hasApi, submitForm } from '../api';
 
 const icons = {
   pin: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" /><circle cx="12" cy="9.5" r="2.5" /></svg>`,
@@ -39,8 +38,8 @@ const field = (name: string, label: string, type: string, extra = '') => {
     </div>`;
 };
 
-/** Contact block for the menu page: address, phone, email and hours, then a form that
- *  opens the visitor's mail app with the message filled in (there is no backend). */
+/** Contact block for the menu page: address, phone, email and hours, then a form. It posts to
+ *  the backend when there is one; otherwise (or if that fails) it opens the visitor's mail app. */
 export function createContact(): HTMLElement {
   const section = document.createElement('section');
   section.id = 'contact';
@@ -52,17 +51,17 @@ export function createContact(): HTMLElement {
       <div class="contact__info">
         <p class="contact__line">
           <span class="contact__icon">${icons.pin}</span>
-          <span>${CAFE.street}<br />${CAFE.city}</span>
+          <span>${escapeHtml(CAFE.street)}<br />${escapeHtml(CAFE.city)}</span>
         </p>
         <p class="contact__line">
           <span class="contact__icon">${icons.phone}</span>
-          <a href="${CAFE.phoneHref}">${CAFE.phone}</a>
+          <a href="${escapeHtml(CAFE.phoneHref)}">${escapeHtml(CAFE.phone)}</a>
         </p>
         <p class="contact__line">
           <span class="contact__icon">${icons.mail}</span>
-          <a href="mailto:${EMAIL}">${EMAIL}</a>
+          <a href="mailto:${escapeHtml(CAFE.email)}">${escapeHtml(CAFE.email)}</a>
         </p>
-        <p class="contact__hours">${HOURS.join('<br />')}</p>
+        <p class="contact__hours">${HOURS.map(escapeHtml).join('<br />')}</p>
       </div>
       <form class="contact__form" novalidate>
         <div class="contact__names">
@@ -71,6 +70,8 @@ export function createContact(): HTMLElement {
         </div>
         ${field('email', 'E-mail', 'email', 'autocomplete="email" required aria-describedby="contact-note"')}
         ${field('message', 'Contacter', 'textarea')}
+        <!-- Honeypot: invisible to people, tempting to bots. -->
+        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0" />
         <p class="contact__note" id="contact-note" role="status" aria-live="polite"></p>
         <button type="submit" class="send-btn">
           <span class="send-btn__outline" aria-hidden="true"></span>
@@ -108,6 +109,15 @@ export function createContact(): HTMLElement {
     }, 4500);
   };
 
+  /** The plane's flight; with reduced motion, straight to "Envoyé". */
+  const playFlight = () => {
+    playSent();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      button.classList.remove('is-sending');
+      button.classList.add('is-sent');
+    }
+  };
+
   button.addEventListener('animationend', (event) => {
     if (event.animationName === 'send-plane-fly') {
       button.classList.remove('is-sending');
@@ -127,9 +137,7 @@ export function createContact(): HTMLElement {
     }
   });
 
-  // No backend: the form opens the visitor's mail app with everything filled in. The
-  // fields keep their text, so nothing is lost if the mail app doesn't open.
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!email.value.trim() || !email.validity.valid) {
       email.setAttribute('aria-invalid', 'true');
@@ -143,24 +151,53 @@ export function createContact(): HTMLElement {
 
     const data = new FormData(form);
     const value = (key: string) => String(data.get(key) ?? '').trim();
-    const name = [value('prenom'), value('nom')].filter(Boolean).join(' ');
-    const subject = name ? `Message de ${name}` : 'Message depuis le site';
-    const lines = name ? [`Nom : ${name}`] : [];
-    lines.push(`E-mail : ${value('email')}`, '', value('message'));
-    const body = lines.join('\n');
 
-    const link = document.createElement('a');
-    link.href = `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    link.click();
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      // No flight: straight to "Envoyé".
-      playSent();
-      button.classList.remove('is-sending');
-      button.classList.add('is-sent');
-    } else {
-      playSent();
+    /** Opens the visitor's mail app with everything filled in. The fields keep their text,
+     *  so nothing is lost if the mail app doesn't open. */
+    const sendByMail = () => {
+      const name = [value('prenom'), value('nom')].filter(Boolean).join(' ');
+      const subject = name ? `Message de ${name}` : 'Message depuis le site';
+      const lines = name ? [`Nom : ${name}`] : [];
+      lines.push(`E-mail : ${value('email')}`, '', value('message'));
+      const body = lines.join('\n');
+
+      const link = document.createElement('a');
+      link.href = `mailto:${CAFE.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      link.click();
+      playFlight();
+      setNote('Votre messagerie s’ouvre avec le message prêt à envoyer.', false);
+    };
+
+    if (!hasApi) {
+      sendByMail();
+      return;
     }
-    setNote('Votre messagerie s’ouvre avec le message prêt à envoyer.', false);
+
+    if (button.getAttribute('aria-disabled')) return;
+    button.setAttribute('aria-disabled', 'true');
+    const result = await submitForm('contact', {
+      prenom: value('prenom'),
+      nom: value('nom'),
+      email: value('email'),
+      message: value('message'),
+      website: value('website'),
+    });
+    button.removeAttribute('aria-disabled');
+
+    if (result.ok) {
+      playFlight();
+      setNote('Merci, votre message est bien envoyé.', false);
+      form.reset();
+    } else if (result.status === 422 && result.fields?.email) {
+      email.setAttribute('aria-invalid', 'true');
+      setNote(email.value.trim() ? 'Merci de vérifier votre e-mail.' : 'Merci d’indiquer votre e-mail.', true);
+      email.focus();
+    } else if (result.status === 429) {
+      setNote('Trop de messages envoyés. Réessayez dans quelques minutes.', true);
+    } else {
+      // The API is down or refused: the mail app still works.
+      sendByMail();
+    }
   });
 
   return section;

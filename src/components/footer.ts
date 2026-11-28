@@ -2,6 +2,7 @@ import './footer.css';
 import { createSocialLinks } from '../style/button-social';
 import { capAccent } from '../style/cap-accent';
 import { CAFE, HOURS, LEGAL_LINKS, NAV_LINKS } from './cafe-info';
+import { escapeHtml } from '../api';
 import { contactIcons } from './contact-icons';
 
 /** Red footer: name, tagline and links; address, phone, email and hours; the copyright.
@@ -34,12 +35,12 @@ export function createFooter(): HTMLElement {
         </nav>
       </div>
       <div class="site-footer__info">
-        <p>${CAFE.street}<br />${CAFE.city}</p>
+        <p>${escapeHtml(CAFE.street)}<br />${escapeHtml(CAFE.city)}</p>
         <p class="site-footer__contact">
-          <a href="${CAFE.phoneHref}">${icons.phone}<span>${CAFE.phone}</span></a>
-          <a href="mailto:${CAFE.email}">${icons.mail}<span>${CAFE.email}</span></a>
+          <a href="${escapeHtml(CAFE.phoneHref)}">${icons.phone}<span>${escapeHtml(CAFE.phone)}</span></a>
+          <a href="mailto:${escapeHtml(CAFE.email)}">${icons.mail}<span>${escapeHtml(CAFE.email)}</span></a>
         </p>
-        <p class="site-footer__hours">${HOURS.join('<br />')}</p>
+        <p class="site-footer__hours">${HOURS.map(escapeHtml).join('<br />')}</p>
       </div>
       <div class="site-footer__legal">
         <a class="site-footer__mark" href="/" aria-label="Café du Conservatoire, accueil">

@@ -3,10 +3,11 @@ import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import './menu-viewer.css';
 import { fadeOutLoader, loaderHeld, loaderMarkup } from './loader';
 import { holdPageVeil, isPageVeiled } from './page-transition';
+import { escapeHtml } from '../api';
+import { MENU } from './cafe-info';
 
 GlobalWorkerOptions.workerSrc = workerUrl;
 
-const MENU_PDF = '/menu.pdf';
 /** Sharper canvases on high-density screens, capped to keep phone memory in check. */
 const MAX_PIXEL_RATIO = 3;
 
@@ -28,10 +29,10 @@ export function createMenuPage(): HTMLElement {
       <div class="menu-page__title-row">
         <h1 class="menu-page__title">Le menu</h1>
       </div>
-      <p class="section-subtitle">Le menu de saison imaginé par notre chef Angelo.</p>
+      <p class="section-subtitle">${escapeHtml(MENU.subtitle)}</p>
     </div>
     <div class="menu-page__bar">
-      <a class="menu-download" href="${MENU_PDF}" download>
+      <a class="menu-download" href="${escapeHtml(MENU.pdf)}" download>
         <span class="menu-download__text">Télécharger</span>
         <span class="menu-download__icon">${downloadIcon}</span>
       </a>
@@ -40,7 +41,7 @@ export function createMenuPage(): HTMLElement {
       <div class="menu-pdf__status loader-host">${loaderMarkup('Chargement du menu')}</div>
     </div>
     <div class="menu-page__foot">
-      <a class="menu-download" href="${MENU_PDF}" download>
+      <a class="menu-download" href="${escapeHtml(MENU.pdf)}" download>
         <span class="menu-download__text">Télécharger</span>
         <span class="menu-download__icon">${downloadIcon}</span>
       </a>
@@ -72,7 +73,7 @@ async function mountPdf(container: HTMLElement) {
 
   let sheets: Sheet[];
   try {
-    const pdf = await getDocument(MENU_PDF).promise;
+    const pdf = await getDocument(MENU.pdf).promise;
     const pages = await Promise.all(
       Array.from({ length: pdf.numPages }, (_, i) => pdf.getPage(i + 1)),
     );
@@ -93,7 +94,7 @@ async function mountPdf(container: HTMLElement) {
     if (!veiled) await loaderHeld(shownAt);
     status.classList.remove('loader-host');
     status.setAttribute('role', 'status');
-    status.innerHTML = `Le menu n’a pas pu s’afficher. <a href="${MENU_PDF}" download>Télécharger le PDF</a>`;
+    status.innerHTML = `Le menu n’a pas pu s’afficher. <a href="${escapeHtml(MENU.pdf)}" download>Télécharger le PDF</a>`;
     return;
   }
 

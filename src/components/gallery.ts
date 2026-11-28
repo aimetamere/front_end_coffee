@@ -1,19 +1,8 @@
 import './gallery.css';
 import { tintBrowserBar } from './theme-color';
 import { fadeOutLoader, loaderHeld, loaderMarkup } from './loader';
-
-/** Web-sized photos only; the full-size originals in public/photo/ start with "_". */
-const photos = [
-  { src: '/photo/web/dsf2361.jpg', alt: 'Photo du café : le chef dresse les assiettes en cuisine' },
-  { src: '/photo/web/dsf2395.jpg', alt: 'Photo du café : deux assiettes de pâtes prêtes à servir' },
-  { src: '/photo/web/dsf2397.jpg', alt: 'Photo du café : la salle et ses clients, vue depuis le comptoir' },
-  { src: '/photo/web/dsf2428.jpg', alt: 'Photo du café : des pâtes versées dans une assiette' },
-  { src: '/photo/web/dsf2453.jpg', alt: 'Photo du café : deux plats assaisonnés au passe' },
-  { src: '/photo/web/dsf2515.jpg', alt: 'Photo du café : un cuisinier assaisonne un plat' },
-  { src: '/photo/web/dsf2605.jpg', alt: 'Photo du café : le chef garnit des assiettes de salade' },
-  { src: '/photo/web/dsf2672.jpg', alt: 'Photo du café : une rangée de plats en cours de dressage' },
-  { src: '/photo/web/dsf2679.jpg', alt: 'Photo du café : soupes et salades prêtes à partir en salle' },
-];
+import { escapeHtml } from '../api';
+import { GALLERY_PHOTOS as photos } from './cafe-info';
 
 const PHOTO_WIDTH = 2000;
 const PHOTO_HEIGHT = 1333;
@@ -40,8 +29,8 @@ export function createGallery(): HTMLElement {
         .map(
           (photo, i) => `
         <li class="gallery__item">
-          <button type="button" class="gallery__tile" data-index="${i}" aria-label="Agrandir : ${photo.alt}">
-            <img class="gallery__image" src="${photo.src}" alt="${photo.alt}" width="${PHOTO_WIDTH}" height="${PHOTO_HEIGHT}" loading="lazy" decoding="async" />
+          <button type="button" class="gallery__tile" data-index="${i}" aria-label="Agrandir : ${escapeHtml(photo.alt)}">
+            <img class="gallery__image" src="${escapeHtml(photo.src)}" alt="${escapeHtml(photo.alt)}" width="${photo.width ?? PHOTO_WIDTH}" height="${photo.height ?? PHOTO_HEIGHT}" loading="lazy" decoding="async" />
           </button>
         </li>`,
         )
@@ -69,7 +58,7 @@ export function createGallery(): HTMLElement {
             .map(
               (photo, i) => `
             <button type="button" class="gallery-lightbox__thumb" data-index="${i}" aria-label="Photo ${i + 1} sur ${photos.length}">
-              <img src="${photo.src}" alt="" width="${PHOTO_WIDTH}" height="${PHOTO_HEIGHT}" loading="lazy" decoding="async" draggable="false" />
+              <img src="${escapeHtml(photo.src)}" alt="" width="${photo.width ?? PHOTO_WIDTH}" height="${photo.height ?? PHOTO_HEIGHT}" loading="lazy" decoding="async" draggable="false" />
             </button>`,
             )
             .join('')}

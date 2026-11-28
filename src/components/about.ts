@@ -1,5 +1,7 @@
 import './about.css';
 import { capAccent } from '../style/cap-accent';
+import { escapeHtml } from '../api';
+import { ABOUT } from './cafe-info';
 
 const interior = {
   src: '/interior.jpg',
@@ -17,16 +19,9 @@ export function createAbout(): HTMLElement {
       <div class="about__copy">
         <img class="about__shape about__shape--oval" src="/shapes/Shape2.png" alt="" aria-hidden="true" width="1000" height="1000" loading="lazy" />
         <h2 id="about-title" class="about__title">${capAccent('À propos de nous')}</h2>
-        <p class="about__subtitle">Un café au cœur du Conservatoire de Musique de Genève</p>
+        <p class="about__subtitle">${escapeHtml(ABOUT.subtitle)}</p>
         <p class="about__text">
-          Découvrez un café où la convivialité se mêle à la gastronomie, au cœur du
-          Conservatoire de Musique de Genève. Sous la direction du Chef Angelo Citiulo,
-          notre café vous propose une sélection exquise de sandwiches, salades et plats
-          chauds, concoctés avec soin et passion. Que ce soit pour une pause déjeuner
-          rapide entre deux répétitions ou pour savourer un repas gourmand avant un
-          concert, notre menu saura combler toutes vos envies. Rejoignez-nous pour une
-          expérience culinaire harmonieuse et savourez chaque bouchée dans un cadre
-          inspirant où la musique et la cuisine fusionnent pour votre plus grand plaisir.
+          ${escapeHtml(ABOUT.text).replace(/\n/g, '<br />')}
         </p>
       </div>
       <figure class="about__media">

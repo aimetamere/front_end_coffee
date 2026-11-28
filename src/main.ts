@@ -4,6 +4,8 @@ import { createHero } from './components/hero';
 import { createAbout } from './components/about';
 import { createGallery } from './components/gallery';
 import { createFooter } from './components/footer';
+import { loadContent } from './api';
+import { applyContent } from './components/cafe-info';
 
 history.scrollRestoration = 'manual';
 
@@ -14,6 +16,9 @@ const scrollToStart = () => {
   else window.scrollTo(0, 0);
 };
 window.addEventListener('pageshow', scrollToStart);
+
+// Content from the API (if any) lands in the shared defaults before anything is built.
+applyContent(await loadContent());
 
 const app = document.querySelector<HTMLDivElement>('#app');
 

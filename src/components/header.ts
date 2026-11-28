@@ -1,6 +1,7 @@
 import './header.css';
 import { capAccent } from '../style/cap-accent';
 import { CAFE, HOURS, NAV_LINKS as links } from './cafe-info';
+import { escapeHtml } from '../api';
 import { tintBrowserBar } from './theme-color';
 import { contactIcons } from './contact-icons';
 import { mountPageTransition } from './page-transition';
@@ -63,12 +64,12 @@ export function createHeader(): HTMLElement {
         </nav>
         <div class="bubble-menu__info" style="--i: ${links.length}">
           <p class="bubble-menu__label">Nous trouver</p>
-          <p>${CAFE.street}<br />${CAFE.city}</p>
+          <p>${escapeHtml(CAFE.street)}<br />${escapeHtml(CAFE.city)}</p>
           <p class="bubble-menu__contact">
-            <a href="${CAFE.phoneHref}">${contactIcons.phone}<span>${CAFE.phone}</span></a>
-            <a href="mailto:${CAFE.email}">${contactIcons.mail}<span>${CAFE.email}</span></a>
+            <a href="${escapeHtml(CAFE.phoneHref)}">${contactIcons.phone}<span>${escapeHtml(CAFE.phone)}</span></a>
+            <a href="mailto:${escapeHtml(CAFE.email)}">${contactIcons.mail}<span>${escapeHtml(CAFE.email)}</span></a>
           </p>
-          <p class="bubble-menu__hours">${HOURS.join('<br />')}</p>
+          <p class="bubble-menu__hours">${HOURS.map(escapeHtml).join('<br />')}</p>
         </div>
       </div>
     </dialog>

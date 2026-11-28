@@ -17,6 +17,11 @@ npm run build     # vérifie les types et génère dist/
 npm run preview   # sert le build de production
 ```
 
+## Backend (optionnel)
+
+Définir `VITE_API_URL` (voir `.env.example`, par ex. `VITE_API_URL=http://localhost:3000`) pour lire le contenu et envoyer le formulaire via le backend.
+Sans cette variable, ou si l'API ne répond pas, le site utilise son contenu intégré.
+
 ## Polices
 
 | Rôle | Police | Fichier |
